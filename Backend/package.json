@@ -4,15 +4,16 @@
   "description": "",
   "main": "app.js",
   "scripts": {
-    "start" : "nodemon app.js"
-    
+    "start": "nodemon app.js"
   },
   "author": "Soban Iftikhar",
   "license": "ISC",
   "dependencies": {
-    "nodemon": "^2.0.22",
-    "express": "^4.18.2",
     "cors": "^2.8.5",
-    "mongoose": "^7.3.4"
+    "express": "^4.18.2",
+    "mongodb": "^7.0.0",
+    "mongoose": "^7.3.4",
+    "nodemon": "^2.0.22",
+    "dotenv": "^16.3.1"
   }
 }
