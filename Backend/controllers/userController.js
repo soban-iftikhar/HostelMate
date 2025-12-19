@@ -88,4 +88,4 @@ const getLeaderboard = async (req, res) => {
     }
 }
 
-export default { registerUser, loginUser, getUserProfile, getLeaderboard };
+export { registerUser, loginUser, getUserProfile, getLeaderboard };
