@@ -10,7 +10,7 @@ export default function Navbar({ userName = 'Alex Chen', karmaPoints = 140, onLo
             <Zap className="w-5 h-5 text-white" strokeWidth={3} />
           </div>
           <div>
-            <span className="block text-lg font-bold text-slate-900">Hostel-Mate</span>
+            <span className="block text-lg font-bold text-slate-900">HostelMate</span>
             <span className="block text-xs text-slate-500 font-medium">Community Favors</span>
           </div>
         </div>

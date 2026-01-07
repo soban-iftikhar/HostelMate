@@ -1,10 +1,11 @@
+import { NavLink } from 'react-router-dom';
 import { Heart, Activity, Trophy } from 'lucide-react';
 
-export default function Sidebar({ activeNav = 'available', onNavigate = () => {} }) {
+export default function Sidebar() {
   const navItems = [
-    { id: 'available', label: 'Available Favors', icon: Heart },
-    { id: 'activity', label: 'My Activity', icon: Activity },
-    { id: 'leaderboard', label: 'Leaderboard', icon: Trophy },
+    { id: 'available', label: 'Available Favors', icon: Heart, to: '/dashboard' },
+    { id: 'activity', label: 'My Activity', icon: Activity, to: '/dashboard/activity' },
+    { id: 'leaderboard', label: 'Leaderboard', icon: Trophy, to: '/dashboard/leaderboard' },
   ];
 
   return (
@@ -12,22 +13,23 @@ export default function Sidebar({ activeNav = 'available', onNavigate = () => {}
       <nav className="p-4 space-y-2">
         {navItems.map((item) => {
           const Icon = item.icon;
-          const isActive = activeNav === item.id;
 
           return (
-            <button
+            <NavLink
               key={item.id}
-              type="button"
-              onClick={() => onNavigate(item.id)}
-              className={`flex w-full items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 font-medium ${
-                isActive
-                  ? 'bg-cyan-600 text-white shadow-sm'
-                  : 'text-slate-700 hover:text-cyan-700 hover:bg-slate-100'
-              }`}
+              to={item.to}
+              end={item.id === 'available'}
+              className={({ isActive }) =>
+                `flex w-full items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 font-medium ${
+                  isActive
+                    ? 'bg-cyan-600 text-white shadow-sm'
+                    : 'text-slate-700 hover:text-cyan-700 hover:bg-slate-100'
+                }`
+              }
             >
               <Icon className="w-5 h-5" />
               <span className="text-sm">{item.label}</span>
-            </button>
+            </NavLink>
           );
         })}
       </nav>

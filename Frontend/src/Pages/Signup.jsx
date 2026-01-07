@@ -4,8 +4,6 @@ import { Mail, Lock, User, DoorOpen, Eye, EyeOff, AlertCircle, CheckCircle } fro
 const SIGNUP_REGEX = {
   EMAIL: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
   NAME: /^[a-zA-Z\s]{2,}$/,
-  ROOM_NUMBER: /^[0-9]{3}-[A-Z]$/,
-  PASSWORD_STRONG: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/,
 };
 
 const PASSWORD_MIN = 8;
@@ -41,9 +39,7 @@ export default function Signup({ onSuccess = null, onSwitchToLogin = null }) {
 
   const validateRoomNumber = (room) => {
     if (!room) return 'Room number is required';
-    if (!SIGNUP_REGEX.ROOM_NUMBER.test(room)) {
-      return 'Room number must be in format: 123-A (e.g., 302-B)';
-    }
+    if (room.trim().length < 1) return 'Room number cannot be empty';
     return '';
   };
 
@@ -51,9 +47,6 @@ export default function Signup({ onSuccess = null, onSwitchToLogin = null }) {
     if (!password) return 'Password is required';
     if (password.length < PASSWORD_MIN) {
       return `Password must be at least ${PASSWORD_MIN} characters`;
-    }
-    if (!SIGNUP_REGEX.PASSWORD_STRONG.test(password)) {
-      return 'Password must contain uppercase, lowercase, number, and special character (@$!%*?&)';
     }
     return '';
   };
@@ -205,20 +198,27 @@ export default function Signup({ onSuccess = null, onSwitchToLogin = null }) {
 
   const getPasswordStrength = (password) => {
     if (!password) return { strength: 0, label: '', color: '' };
+    
     let strength = 0;
-    if (password.length >= 8) strength++;
-    if (/[a-z]/.test(password)) strength++;
-    if (/[A-Z]/.test(password)) strength++;
-    if (/\d/.test(password)) strength++;
-    if (/[@$!%*?&]/.test(password)) strength++;
+    const criteria = {
+      hasLower: /[a-z]/.test(password),
+      hasUpper: /[A-Z]/.test(password),
+      hasNumber: /\d/.test(password),
+      hasSpecial: /[!@#$%^&*(),.?":{}|<>]/.test(password),
+    };
+    
+    // Count how many character types are used
+    if (criteria.hasLower) strength++;
+    if (criteria.hasUpper) strength++;
+    if (criteria.hasNumber) strength++;
+    if (criteria.hasSpecial) strength++;
 
     const strengths = [
-      { strength: 0, label: '', color: '' },
-      { strength: 1, label: 'Very Weak', color: 'bg-red-500' },
-      { strength: 2, label: 'Weak', color: 'bg-orange-500' },
-      { strength: 3, label: 'Fair', color: 'bg-yellow-500' },
-      { strength: 4, label: 'Good', color: 'bg-blue-500' },
-      { strength: 5, label: 'Strong', color: 'bg-emerald-500' },
+      { strength: 0, label: 'Very Weak', color: 'bg-red-500' },
+      { strength: 1, label: 'Weak', color: 'bg-orange-500' },
+      { strength: 2, label: 'Fair', color: 'bg-yellow-500' },
+      { strength: 3, label: 'Good', color: 'bg-blue-500' },
+      { strength: 4, label: 'Strong', color: 'bg-emerald-500' },
     ];
     return strengths[strength];
   };
@@ -321,7 +321,7 @@ export default function Signup({ onSuccess = null, onSwitchToLogin = null }) {
                   onChange={handleChange}
                   onBlur={handleBlur}
                   placeholder="302-B"
-                  className={`w-full pl-10 pr-4 py-3 rounded-lg border transition-colors uppercase ${
+                  className={`w-full pl-10 pr-4 py-3 rounded-lg border transition-colors ${
                     errors.roomNumber && touched.roomNumber
                       ? 'border-red-300 bg-red-50 text-slate-900'
                       : 'border-slate-200 bg-white text-slate-900'
@@ -373,7 +373,7 @@ export default function Signup({ onSuccess = null, onSwitchToLogin = null }) {
                     <div className="flex-1 h-2 bg-slate-200 rounded-full overflow-hidden">
                       <div
                         className={`h-full transition-all ${getPasswordStrength(formData.password).color}`}
-                        style={{ width: `${(getPasswordStrength(formData.password).strength / 5) * 100}%` }}
+                        style={{ width: `${(getPasswordStrength(formData.password).strength / 4) * 100}%` }}
                       />
                     </div>
                     <span className="text-xs font-semibold text-slate-600">
@@ -381,7 +381,7 @@ export default function Signup({ onSuccess = null, onSwitchToLogin = null }) {
                     </span>
                   </div>
                   <p className="text-xs text-slate-500">
-                    Must contain: uppercase, lowercase, number, and special character
+                    Strength based on character variety (lowercase, uppercase, numbers, special chars)
                   </p>
                 </div>
               )}
