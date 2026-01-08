@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { Mail, Lock, Eye, EyeOff, AlertCircle, CheckCircle } from 'lucide-react';
+import axios from 'axios';
 
 const LOGIN_REGEX = {
   EMAIL: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-  PASSWORD_MIN: 6,
+  PASSWORD_MIN: 6, // Adjusted to match your backend schema
 };
 
 export default function Login({ onSuccess = null, onSwitchToSignup = null }) {
@@ -34,85 +35,66 @@ export default function Login({ onSuccess = null, onSwitchToSignup = null }) {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
 
-    // Real-time validation
-    if (touched[name]) {
-      const newErrors = { ...errors };
-      if (name === 'email') {
-        const emailError = validateEmail(value);
-        if (emailError) {
-          newErrors.email = emailError;
-        } else {
-          delete newErrors.email;
-        }
-      } else if (name === 'password') {
-        const passwordError = validatePassword(value);
-        if (passwordError) {
-          newErrors.password = passwordError;
-        } else {
-          delete newErrors.password;
-        }
-      }
-      setErrors(newErrors);
+    // Clear backend "submit" error when user starts typing again
+    if (errors.submit) {
+      const { submit, ...rest } = errors;
+      setErrors(rest);
     }
   };
 
   const handleBlur = (e) => {
     const { name } = e.target;
-    setTouched((prev) => ({
-      ...prev,
-      [name]: true,
-    }));
-
-    // Validate on blur
-    const newErrors = { ...errors };
-    if (name === 'email') {
-      const emailError = validateEmail(formData.email);
-      if (emailError) {
-        newErrors.email = emailError;
-      } else {
-        delete newErrors.email;
-      }
-    } else if (name === 'password') {
-      const passwordError = validatePassword(formData.password);
-      if (passwordError) {
-        newErrors.password = passwordError;
-      } else {
-        delete newErrors.password;
-      }
-    }
-    setErrors(newErrors);
+    setTouched((prev) => ({ ...prev, [name]: true }));
+    
+    const error = name === 'email' ? validateEmail(formData.email) : validatePassword(formData.password);
+    setErrors(prev => {
+      const newErrors = { ...prev };
+      if (error) newErrors[name] = error;
+      else delete newErrors[name];
+      return newErrors;
+    });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Validate all fields
-    const newErrors = {};
-    const emailError = validateEmail(formData.email);
-    const passwordError = validatePassword(formData.password);
+    const emailErr = validateEmail(formData.email);
+    const passErr = validatePassword(formData.password);
 
-    if (emailError) newErrors.email = emailError;
-    if (passwordError) newErrors.password = passwordError;
+    if (emailErr || passErr) {
+      setErrors({ email: emailErr, password: passErr });
+      setTouched({ email: true, password: true });
+      return;
+    }
 
-    setErrors(newErrors);
-    setTouched({ email: true, password: true });
+    setIsLoading(true);
+    try {
+      // API call to your backend
+      const response = await axios.post('http://localhost:5000/api/users/login', {
+        email: formData.email,
+        password: formData.password
+      });
 
-    if (Object.keys(newErrors).length === 0) {
-      setIsLoading(true);
-      // Simulate API call
-      setTimeout(() => {
-        setSuccessMessage(`Welcome back! You're now logged in.`);
+      if (response.data) {
+        setSuccessMessage(`Welcome back, ${response.data.name}!`);
+        // Store the user object with the MongoDB _id
+        localStorage.setItem('currentUser', JSON.stringify(response.data));
+        
         setFormData({ email: '', password: '' });
         setErrors({});
-        setTouched({});
-        setIsLoading(false);
-        if (onSuccess) onSuccess();
-      }, 1500);
+        
+        setTimeout(() => {
+          setIsLoading(false);
+          if (onSuccess) onSuccess(response.data);
+        }, 1500);
+      }
+    } catch (err) {
+      setIsLoading(false);
+      // Capture the "Invalid email or password" message from your backend
+      const message = err.response?.data?.message || "Server is offline. Please try again later.";
+      setErrors({ submit: message });
     }
   };
 
@@ -120,7 +102,6 @@ export default function Login({ onSuccess = null, onSwitchToSignup = null }) {
     <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <div className="bg-white rounded-2xl border border-slate-200 shadow-lg p-8">
-          {/* Header */}
           <div className="mb-8 text-center">
             <div className="inline-flex h-12 w-12 items-center justify-center rounded-lg bg-cyan-600 text-white mb-4">
               <Lock className="w-6 h-6" />
@@ -129,7 +110,14 @@ export default function Login({ onSuccess = null, onSwitchToSignup = null }) {
             <p className="text-slate-600">Sign in to your Hostel-Mate account</p>
           </div>
 
-          {/* Success Message */}
+          {/* Backend Error Display (Critical for feedback) */}
+          {errors.submit && (
+            <div className="mb-6 flex items-center gap-3 rounded-lg bg-red-50 border border-red-200 p-4">
+              <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0" />
+              <p className="text-sm font-medium text-red-700">{errors.submit}</p>
+            </div>
+          )}
+
           {successMessage && (
             <div className="mb-6 flex items-center gap-3 rounded-lg bg-emerald-50 border border-emerald-200 p-4">
               <CheckCircle className="w-5 h-5 text-emerald-600 flex-shrink-0" />
@@ -137,120 +125,66 @@ export default function Login({ onSuccess = null, onSwitchToSignup = null }) {
             </div>
           )}
 
-          {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-5">
-            {/* Email Field */}
             <div>
-              <label htmlFor="email" className="block text-sm font-semibold text-slate-900 mb-2">
-                Email Address
-              </label>
+              <label className="block text-sm font-semibold text-slate-900 mb-2">Email Address</label>
               <div className="relative">
                 <Mail className="absolute left-3 top-3.5 w-5 h-5 text-slate-400" />
                 <input
                   type="email"
-                  id="email"
                   name="email"
                   value={formData.email}
                   onChange={handleChange}
                   onBlur={handleBlur}
+                  className={`w-full pl-10 pr-4 py-3 rounded-lg border focus:outline-none focus:ring-2 focus:ring-cyan-600 ${
+                    errors.email && touched.email ? 'border-red-300 bg-red-50' : 'border-slate-200'
+                  }`}
                   placeholder="you@example.com"
-                  className={`w-full pl-10 pr-4 py-3 rounded-lg border transition-colors ${
-                    errors.email && touched.email
-                      ? 'border-red-300 bg-red-50 text-slate-900'
-                      : 'border-slate-200 bg-white text-slate-900'
-                  } placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-600`}
                 />
               </div>
               {errors.email && touched.email && (
-                <div className="mt-2 flex items-center gap-2 text-sm text-red-600">
-                  <AlertCircle className="w-4 h-4" />
-                  {errors.email}
-                </div>
+                <p className="mt-2 text-sm text-red-600 flex items-center gap-1"><AlertCircle className="w-4 h-4" />{errors.email}</p>
               )}
             </div>
 
-            {/* Password Field */}
             <div>
-              <label htmlFor="password" className="block text-sm font-semibold text-slate-900 mb-2">
-                Password
-              </label>
+              <label className="block text-sm font-semibold text-slate-900 mb-2">Password</label>
               <div className="relative">
                 <Lock className="absolute left-3 top-3.5 w-5 h-5 text-slate-400" />
                 <input
                   type={showPassword ? 'text' : 'password'}
-                  id="password"
                   name="password"
                   value={formData.password}
                   onChange={handleChange}
                   onBlur={handleBlur}
+                  className={`w-full pl-10 pr-12 py-3 rounded-lg border focus:outline-none focus:ring-2 focus:ring-cyan-600 ${
+                    errors.password && touched.password ? 'border-red-300 bg-red-50' : 'border-slate-200'
+                  }`}
                   placeholder="••••••••"
-                  className={`w-full pl-10 pr-12 py-3 rounded-lg border transition-colors ${
-                    errors.password && touched.password
-                      ? 'border-red-300 bg-red-50 text-slate-900'
-                      : 'border-slate-200 bg-white text-slate-900'
-                  } placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-600`}
                 />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-3.5 text-slate-400 hover:text-slate-600"
-                >
+                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-3.5 text-slate-400">
                   {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
               </div>
               {errors.password && touched.password && (
-                <div className="mt-2 flex items-center gap-2 text-sm text-red-600">
-                  <AlertCircle className="w-4 h-4" />
-                  {errors.password}
-                </div>
+                <p className="mt-2 text-sm text-red-600 flex items-center gap-1"><AlertCircle className="w-4 h-4" />{errors.password}</p>
               )}
             </div>
 
-            {/* Remember Me & Forgot Password */}
-            <div className="flex items-center justify-between">
-              <label className="flex items-center gap-2">
-                <input type="checkbox" className="w-4 h-4 rounded border-slate-300" />
-                <span className="text-sm text-slate-600">Remember me</span>
-              </label>
-              <a href="#" className="text-sm font-medium text-cyan-600 hover:text-cyan-700">
-                Forgot password?
-              </a>
-            </div>
-
-            {/* Submit Button */}
             <button
               type="submit"
-              disabled={isLoading || Object.keys(errors).length > 0}
-              className="w-full bg-cyan-600 hover:bg-cyan-700 disabled:bg-slate-300 text-white font-semibold py-3 rounded-lg transition-colors duration-200 shadow-md flex items-center justify-center gap-2"
+              disabled={isLoading}
+              className="w-full bg-cyan-600 hover:bg-cyan-700 disabled:bg-slate-300 text-white font-semibold py-3 rounded-lg transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer disabled:cursor-not-allowed"
             >
-              {isLoading ? (
-                <>
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  Signing in...
-                </>
-              ) : (
-                'Sign In'
-              )}
+              {isLoading ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> : 'Sign In'}
             </button>
           </form>
 
-          {/* Sign Up Link */}
           <p className="mt-6 text-center text-sm text-slate-600">
             Don't have an account?{' '}
-            <button
-              type="button"
-              onClick={() => onSwitchToSignup && onSwitchToSignup()}
-              className="font-semibold text-cyan-600 hover:text-cyan-700"
-            >
-              Sign up here
-            </button>
+            <button onClick={onSwitchToSignup} className="font-semibold text-cyan-600 cursor-pointer">Sign up here</button>
           </p>
         </div>
-
-        {/* Footer */}
-        <p className="mt-6 text-center text-xs text-slate-500">
-          By signing in, you agree to our Terms of Service and Privacy Policy
-        </p>
       </div>
     </div>
   );
