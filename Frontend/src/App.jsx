@@ -5,6 +5,7 @@ import Signup from "./Pages/Signup";
 import Activity from "./Pages/Activity";
 import Leaderboard from "./Pages/Leaderboard";
 import Available from "./Pages/Available";
+import Privacy from "./Pages/Privacy";
 
 function App() {
   const navigate = useNavigate();
@@ -17,7 +18,6 @@ function App() {
         element={
           <Login
             onSuccess={() => navigate("/dashboard")}
-            onSwitchToSignup={() => navigate("/signup")}
           />
         }
       />
@@ -26,7 +26,6 @@ function App() {
         element={
           <Signup
             onSuccess={() => navigate("/dashboard")}
-            onSwitchToLogin={() => navigate("/login")}
           />
         }
       />
@@ -38,6 +37,7 @@ function App() {
         <Route path="activity" element={<Activity />} />
         <Route path="leaderboard" element={<Leaderboard />} />
       </Route>
+      <Route path="/privacy" element={<Privacy />} />
       <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>
   );

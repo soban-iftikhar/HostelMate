@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Mail, Lock, Eye, EyeOff, AlertCircle, CheckCircle } from 'lucide-react';
 import axios from 'axios';
 
@@ -7,7 +8,7 @@ const LOGIN_REGEX = {
   PASSWORD_MIN: 6, // Adjusted to match your backend schema
 };
 
-export default function Login({ onSuccess = null, onSwitchToSignup = null }) {
+export default function Login({ onSuccess = null }) {
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -182,7 +183,7 @@ export default function Login({ onSuccess = null, onSwitchToSignup = null }) {
 
           <p className="mt-6 text-center text-sm text-slate-600">
             Don't have an account?{' '}
-            <button onClick={onSwitchToSignup} className="font-semibold text-cyan-600 cursor-pointer">Sign up here</button>
+            <Link to="/signup" className="font-semibold text-cyan-600 hover:underline">Sign up here</Link>
           </p>
         </div>
       </div>
