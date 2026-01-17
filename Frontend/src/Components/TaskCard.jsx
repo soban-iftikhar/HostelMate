@@ -1,15 +1,9 @@
 import { useState } from 'react';
 import { CheckCircle } from 'lucide-react';
 
-export default function TaskCard({
-  title = 'Fix the Wi-Fi Router',
-  reward = 20,
-  requesterName = 'Jordan Smith',
-  roomNumber = '302-B',
-  description = 'The Wi-Fi in my room has been spotty. Can you help me reset it and check the connection?',
-}) {
+function TaskCard({ title, reward, requesterName, roomNumber, description }) {
   const [isExpanded, setIsExpanded] = useState(false);
-  const shouldTruncate = description.length > 140;
+  const shouldTruncate = description && description.length > 140;
   return (
     <div className="bg-white rounded-xl border border-slate-200 shadow-md hover:shadow-lg transition-shadow duration-300 p-6 flex h-full flex-col">
       {/* Title and Reward Badge */}
@@ -65,3 +59,5 @@ export default function TaskCard({
     </div>
   );
 }
+
+export default TaskCard;

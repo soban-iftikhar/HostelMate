@@ -198,10 +198,10 @@ export default function Signup({ onSuccess = null, onSwitchToLogin = null }) {
                   name="password"
                   value={formData.password}
                   onChange={handleChange}
-                  className="w-full px-4 py-3 rounded-lg border border-slate-200 focus:ring-2 focus:ring-cyan-600"
+                  className="w-full px-4 py-3 rounded-lg border border-slate-200 focus:ring-2 focus:ring-cyan-600 "
                   placeholder="••••••••"
                 />
-                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-3.5 text-slate-400">
+                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-3.5 text-slate-400 cursor-pointer">
                   {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
               </div>
@@ -233,8 +233,8 @@ export default function Signup({ onSuccess = null, onSwitchToLogin = null }) {
             </button>
           </form>
 
-          <p className="mt-6 text-center text-sm text-slate-600">
-            Already have an account? <button onClick={onSwitchToLogin} className="text-cyan-600 font-bold">Sign in</button>
+          <p className="mt-6 text-center text-sm text-slate-600 cur">
+            Already have an account? <Link to="/login" className="text-cyan-600 hover:underline font-semibold cursor-pointer">Sign in</Link>
           </p>
         </div>
       </div>
