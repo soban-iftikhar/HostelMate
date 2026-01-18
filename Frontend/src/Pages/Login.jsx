@@ -72,7 +72,7 @@ export default function Login({ onSuccess = null }) {
 
     setIsLoading(true);
     try {
-      // API call to your backend
+      // API call to backend
       const response = await axios.post('http://localhost:5000/api/users/login', {
         email: formData.email,
         password: formData.password

@@ -112,7 +112,9 @@ const getMyTasks = async (req, res) => {
         { requester: userId },
         { helper: userId }
       ]
-    }).sort({ createdAt: -1 }); // Show newest first
+    })
+      .populate('requester', 'name roomNo')
+      .sort({ createdAt: -1 }); 
 
     res.status(200).json(tasks);
   } catch (error) {

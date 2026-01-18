@@ -10,8 +10,7 @@ function TaskCard({ title, reward, requesterName, roomNumber, description }) {
       <div className="flex items-start justify-between mb-4 gap-4">
         <h3 className="text-lg font-bold text-slate-900 flex-1 leading-snug">{title}</h3>
         <div className="bg-cyan-600 rounded-lg px-3 py-2 flex-shrink-0 shadow-sm">
-          <span className="text-sm font-bold text-white">+{reward}</span>
-          <span className="text-xs font-semibold text-cyan-100 block">pts</span>
+          <span className="text-sm font-bold text-white">+{reward} pts</span>
         </div>
       </div>
 

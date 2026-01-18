@@ -1,12 +1,28 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-import TaskCard from './TaskCard';
+import TaskCard from '../Components/TaskCard';
+import Navbar from '../Components/Navbar';
+import Sidebar from '../Components/Sidebar';
+import { Outlet } from 'react-router-dom';
+
+
+function Available() {
+  return (
+    <div className="flex flex-col h-screen bg-slate-50">
+      <Navbar />
+      <div className="flex flex-1 overflow-hidden">
+        <Sidebar />
+        <Outlet />
+      </div>
+    </div>
+  );
+}
 
 /**
- * Available Component
+ * Available List
  * Fetches and displays tasks that are pending and not created by the current user.
  */
-function Available() {
+function AvailableList() {
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -15,7 +31,7 @@ function Available() {
     try {
       setLoading(true);
       
-      // 1. Get current user from localStorage to filter tasks
+      // Get current user from localStorage to filter tasks
       const storedUser = localStorage.getItem('currentUser');
       const currentUser = storedUser ? JSON.parse(storedUser) : null;
 
@@ -31,7 +47,7 @@ function Available() {
       setLoading(false);
     } catch (err) {
       console.error('Error fetching tasks:', err);
-      setError("Failed to load favors. Please try again later.");
+      setError("Failed to load favors. Please check your internet connection or try again later.");
       setLoading(false);
     }
   };
@@ -84,9 +100,9 @@ function Available() {
           {tasks.length > 0 ? (
             tasks.map((task) => (
               <TaskCard
-                key={task._id} 
+                key={task._id}
                 title={task.title}
-                reward={task.rewardPoints} 
+                reward={task.rewardPoints}
                 description={task.description}
                 requesterName={task.requester?.name || "Unknown Resident"}
                 roomNumber={task.requester?.roomNo || "N/A"}
@@ -104,3 +120,4 @@ function Available() {
 }
 
 export default Available;
+export { AvailableList };
