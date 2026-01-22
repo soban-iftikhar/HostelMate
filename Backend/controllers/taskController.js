@@ -139,6 +139,31 @@ const updateOwnTask = async (req, res) => {
       return res.status(400).json({ message: 'Cannot edit a task already in progress' });
     }
 
+    if (Object.prototype.hasOwnProperty.call(updateData, 'rewardPoints')) {
+      const newReward = Number(updateData.rewardPoints);
+      if (Number.isNaN(newReward) || newReward <= 0) {
+        return res.status(400).json({ message: 'Reward points must be positive' });
+      }
+
+      const diff = newReward - task.rewardPoints;
+      if (diff !== 0) {
+        const user = await User.findById(userId);
+        if (!user) return res.status(400).json({ message: 'User not found' });
+
+        if (diff > 0) {
+          if (user.karmaPoints < diff) {
+            return res.status(400).json({ message: 'Insufficient karma points' });
+          }
+          user.karmaPoints -= diff;
+        } else {
+          user.karmaPoints += Math.abs(diff);
+        }
+        await user.save();
+      }
+
+      updateData.rewardPoints = newReward;
+    }
+
     const updatedTask = await Task.findByIdAndUpdate(id, updateData, { new: true });
     res.status(200).json(updatedTask);
   } catch (error) {
