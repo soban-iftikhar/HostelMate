@@ -1,21 +1,23 @@
+import mongoose from 'mongoose';
 import Task from '../models/Task.js';
 import User from '../models/User.js';
 
 // Create a new task
 const createTask = async (req, res) => {
   try {
-    const { requester, rewardPoints, title, description } = req.body;
+    const { requester, rewardPoints} = req.body;
+    const requesterId = typeof requester === 'string' ? requester.trim() : requester;
 
     // Input validation
-    if (!requester || !rewardPoints || !title || !description) {
-      return res.status(400).json({ message: 'Missing required fields' });
+    if (!mongoose.Types.ObjectId.isValid(requesterId)) {
+      return res.status(400).json({ message: 'Invalid requester id' });
     }
     if (rewardPoints <= 0) {
       return res.status(400).json({ message: 'Reward points must be positive' });
     }
 
     // Check if the requester has enough points
-    const user = await User.findById(requester);
+    const user = await User.findById(requesterId);
     if (!user) {
       return res.status(400).json({ message: 'User not found' });
     }
@@ -28,7 +30,7 @@ const createTask = async (req, res) => {
     await user.save();
 
     // Save the task
-    const newTask = new Task(req.body);
+    const newTask = new Task({ ...req.body, requester: requesterId });
     const savedTask = await newTask.save();
     res.status(201).json(savedTask);
 
@@ -41,10 +43,6 @@ const createTask = async (req, res) => {
 const getAvailableTasks = async (req, res) => {
   try {
     const { userId } = req.query;
-
-    if (!userId) {
-      return res.status(400).json({ message: 'userId is required' });
-    }
 
     // Fetch tasks that are pending and not created by the requesting user and populate requester details
     const tasks = await Task.find({
@@ -62,10 +60,6 @@ const getAvailableTasks = async (req, res) => {
 const acceptTask = async (req, res) => {
   try {
     const { taskId, helperId } = req.body;
-
-    if (!taskId || !helperId) {
-      return res.status(400).json({ message: 'taskId and helperId are required' });
-    }
 
     const updatedTask = await Task.findByIdAndUpdate(
       taskId,
@@ -112,10 +106,6 @@ const getMyTasks = async (req, res) => {
   try {
     const { userId } = req.params;
 
-    if (!userId) {
-      return res.status(400).json({ message: 'userId is required' });
-    }
-
     // Fetch tasks where I am the requester OR the helper
     const tasks = await Task.find({
       $or: [
@@ -135,10 +125,6 @@ const updateOwnTask = async (req, res) => {
   try {
     const { id } = req.params;
     const { userId, ...updateData } = req.body; // Assume userId is sent from frontend
-
-    if (!userId || !id) {
-      return res.status(400).json({ message: 'userId and task id are required' });
-    }
 
     const task = await Task.findById(id);
     if (!task) return res.status(404).json({ message: 'Task not found' });
@@ -163,10 +149,6 @@ const deleteOwnTask = async (req, res) => {
   try {
     const { id } = req.params;
     const { userId } = req.body;
-
-    if (!userId || !id) {
-      return res.status(400).json({ message: 'userId and task id are required' });
-    }
 
     const task = await Task.findById(id);
     if (!task) return res.status(404).json({ message: 'Task not found' });
