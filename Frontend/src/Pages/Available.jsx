@@ -37,7 +37,9 @@ export default function Available() {
   };
 
   useEffect(() => {
-    fetchAvailableTasks();
+    (async () => {
+      await fetchAvailableTasks();
+    })();
   }, []);
 
   // Show loading state while waiting for MongoDB
