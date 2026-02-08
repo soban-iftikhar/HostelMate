@@ -1,12 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import axios from 'axios';
-import TaskCard from '../Components/TaskCard';
+import TaskCard from './TaskCard';
 
 /**
  * Available Component
  * Fetches and displays tasks that are pending and not created by the current user.
  */
-export default function Available() {
+function Available() {
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -25,13 +25,13 @@ export default function Available() {
         return;
       }
 
-      const response = await axios.get(`http://localhost:5000/api/tasks/available/${currentUser._id}`);
+      const response = await axios.get(`http://localhost:5000/api/tasks/available`);
       
       setTasks(response.data);
       setLoading(false);
     } catch (err) {
       console.error('Error fetching tasks:', err);
-      setError("Failed to load favors. Please ensure the backend is running.");
+      setError("Failed to load favors. Please try again later.");
       setLoading(false);
     }
   };
@@ -58,7 +58,7 @@ export default function Available() {
         <p className="text-red-500 font-medium">{error}</p>
         <button 
           onClick={fetchAvailableTasks}
-          className="mt-4 text-cyan-600 hover:underline"
+          className="mt-4 text-cyan-600 hover:underline font-semibold cursor-pointer"
         >
           Try Again
         </button>
@@ -85,11 +85,9 @@ export default function Available() {
             tasks.map((task) => (
               <TaskCard
                 key={task._id} 
-                taskId={task._id}
                 title={task.title}
                 reward={task.rewardPoints} 
                 description={task.description}
-                // Accessing populated user data
                 requesterName={task.requester?.name || "Unknown Resident"}
                 roomNumber={task.requester?.roomNo || "N/A"}
               />
@@ -104,3 +102,5 @@ export default function Available() {
     </main>
   );
 }
+
+export default Available;

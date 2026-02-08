@@ -4,7 +4,7 @@ import Login from "./Pages/Login";
 import Signup from "./Pages/Signup";
 import Activity from "./Pages/Activity";
 import Leaderboard from "./Pages/Leaderboard";
-import Available from "./Pages/Available";
+import Available from "./Components/Available";
 import Privacy from "./Pages/Privacy";
 
 function App() {
@@ -33,7 +33,6 @@ function App() {
         path="/dashboard"
         element={<Dashboard onLogout={() => navigate("/login")} />}
       >
-        <Route index element={<Available />} />
         <Route path="activity" element={<Activity />} />
         <Route path="leaderboard" element={<Leaderboard />} />
       </Route>
