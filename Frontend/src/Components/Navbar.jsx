@@ -42,6 +42,15 @@ function Navbar() {
 
   useEffect(() => {
     fetchUserData();
+
+    const handleKarmaUpdate = () => {
+      fetchUserData();
+    };
+
+    window.addEventListener('karma-updated', handleKarmaUpdate);
+    return () => {
+      window.removeEventListener('karma-updated', handleKarmaUpdate);
+    };
   }, []);
   
   return (
