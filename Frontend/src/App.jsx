@@ -1,10 +1,9 @@
 import { Navigate, Route, Routes, useNavigate } from "react-router-dom";
-import Dashboard from "./Pages/Dashboard";
 import Login from "./Pages/Login";
 import Signup from "./Pages/Signup";
 import Activity from "./Pages/Activity";
 import Leaderboard from "./Pages/Leaderboard";
-import Available from "./Components/Available";
+import Available, { AvailableList } from "./Pages/AvailableFavors";
 import Privacy from "./Pages/Privacy";
 
 function App() {
@@ -31,8 +30,9 @@ function App() {
       />
       <Route
         path="/dashboard"
-        element={<Dashboard onLogout={() => navigate("/login")} />}
+        element={<Available />}
       >
+        <Route index element={<AvailableList />} />
         <Route path="activity" element={<Activity />} />
         <Route path="leaderboard" element={<Leaderboard />} />
       </Route>
