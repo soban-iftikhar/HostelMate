@@ -6,6 +6,7 @@ import History from "./Pages/History";
 import Leaderboard from "./Pages/Leaderboard";
 import Available, { AvailableList } from "./Pages/AvailableFavors";
 import Privacy from "./Pages/Privacy";
+import CreateTask from "./Pages/CreateTask";
 
 function App() {
   const navigate = useNavigate();
@@ -35,6 +36,7 @@ function App() {
       >
         <Route index element={<AvailableList />} />
         <Route path="activity" element={<Activity />} />
+        <Route path="create-task" element={<CreateTask />} />
         <Route path="history" element={<History />} />
         <Route path="leaderboard" element={<Leaderboard />} />
       </Route>

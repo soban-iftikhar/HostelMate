@@ -5,11 +5,13 @@ import axios from 'axios';
 function History() {
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [currentUserId, setCurrentUserId] = useState(null);
 
   const fetchHistory = async () => {
     const storedUser = localStorage.getItem('currentUser');
     const currentUser = storedUser ? JSON.parse(storedUser) : null;
     const userId = currentUser ? currentUser._id : null;
+    setCurrentUserId(userId);
 
     try {
       const response = await axios.get(`http://localhost:5000/api/tasks/history/${userId}`);
@@ -50,7 +52,13 @@ function History() {
               No completed tasks yet.
             </div>
           ) : (
-            history.map((item) => (
+            history.map((item) => {
+              // Check if current user is the requester (posted the task) or helper (completed the task)
+              const isRequester = item.requester?._id === currentUserId;
+              const pointsColor = isRequester ? 'text-rose-600' : 'text-emerald-600';
+              const pointsSign = isRequester ? '-' : '+';
+              
+              return (
               <div
                 key={item._id}
                 className="bg-white rounded-xl border border-slate-200 shadow-md p-6"
@@ -68,14 +76,16 @@ function History() {
                     <p className="text-sm text-slate-600">{item.description}</p>
                   </div>
                   <div className="text-right">
-                    <div className="text-sm font-bold text-emerald-600 mb-2">+{item.rewardPoints} pts</div>
+                    <div className={`text-sm font-bold mb-2 ${pointsColor}`}>
+                      {pointsSign}{item.rewardPoints} pts
+                    </div>
                     <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold border bg-emerald-50 text-emerald-700 border-emerald-200">
                       Completed
                     </span>
                   </div>
                 </div>
               </div>
-            ))
+            );})
           )}
         </div>
       </div>
