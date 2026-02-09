@@ -80,7 +80,7 @@ export default function Signup({ onSuccess = null, onSwitchToLogin = null }) {
     if (Object.keys(newErrors).length === 0) {
       setIsLoading(true);
       try {
-        const response = await axios.post('http://localhost:5000/api/users/register', {
+        const response = await axios.post('https://hostelmate-94en.onrender.com/api/users/register', {
           name: formData.fullName,
           email: formData.email,
           password: formData.password,

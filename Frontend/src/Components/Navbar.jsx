@@ -20,7 +20,7 @@ function Navbar() {
       const userId = parsedUser._id; // MongoDB uses _id
 
       // Using Axios to match the rest of your project
-      const response = await axios.get(`http://localhost:5000/api/users/profile/${userId}`);
+      const response = await axios.get(`https://hostelmate-94en.onrender.com/api/users/profile/${userId}`);
       
       setUser({
         name: response.data.name,

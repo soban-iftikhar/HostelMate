@@ -21,7 +21,7 @@ function TaskCard({ taskId, title, reward, requesterName, roomNumber, descriptio
         return;
       }
 
-      await axios.put('http://localhost:5000/api/tasks/accept', {
+      await axios.put('https://hostelmate-94en.onrender.com/api/tasks/accept', {
         taskId: taskId,
         helperId: currentUser._id
       });
