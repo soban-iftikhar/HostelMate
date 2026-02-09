@@ -76,37 +76,54 @@ const acceptTask = async (req, res) => {
   }
 };
 
-// Complete Task
+// Request Completion (Helper marks as done, waiting for requester approval)
 const completeTask = async (req, res) => {
   try {
     const { id } = req.params;
+    const { userId, role } = req.body; // role: 'helper' or 'requester'
 
-    // Find the task and the helper
     const currentTask = await Task.findById(id);
-    if (!currentTask || currentTask.status !== 'in-progress') {
-      return res.status(400).json({ message: 'Task must be in-progress first' });
+    if (!currentTask) {
+      return res.status(404).json({ message: 'Task not found' });
+    }
+    
+    if (currentTask.status !== 'in-progress' && currentTask.status !== 'pending-verification') {
+      return res.status(400).json({ message: 'Task must be in-progress or pending verification' });
     }
 
-    // Give points to the helper
-    await User.findByIdAndUpdate(currentTask.helper, {
-      $inc: { karmaPoints: currentTask.rewardPoints }
-    });
+    // If helper requests completion
+    if (role === 'helper' && currentTask.helper.toString() === userId) {
+      currentTask.status = 'pending-verification';
+      currentTask.completionRequestedBy = 'helper';
+      await currentTask.save();
+      return res.status(200).json({ message: 'Completion request sent to requester for approval' });
+    }
 
-    // Save history entry and remove task from active list
-    await History.create({
-      taskId: currentTask._id,
-      title: currentTask.title,
-      description: currentTask.description,
-      rewardPoints: currentTask.rewardPoints,
-      requester: currentTask.requester,
-      helper: currentTask.helper,
-      status: 'completed',
-      completedAt: new Date()
-    });
+    // If requester approves (either they initiate or approve helper's request)
+    if (role === 'requester' && currentTask.requester.toString() === userId) {
+      // Give points to the helper
+      await User.findByIdAndUpdate(currentTask.helper, {
+        $inc: { karmaPoints: currentTask.rewardPoints }
+      });
 
-    await Task.findByIdAndDelete(currentTask._id);
+      // Save history entry and remove task from active list
+      await History.create({
+        taskId: currentTask._id,
+        title: currentTask.title,
+        description: currentTask.description,
+        rewardPoints: currentTask.rewardPoints,
+        requester: currentTask.requester,
+        helper: currentTask.helper,
+        status: 'completed',
+        completedAt: new Date()
+      });
 
-    res.status(200).json({ message: 'Task completed! Points awarded to helper.' });
+      await Task.findByIdAndDelete(currentTask._id);
+
+      return res.status(200).json({ message: 'Task completed! Points awarded to helper.' });
+    }
+
+    return res.status(403).json({ message: 'Not authorized to perform this action' });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -130,6 +147,7 @@ const getMyTasks = async (req, res) => {
       ]
     })
       .populate('requester', 'name roomNo')
+      .populate('helper', 'name roomNo')
       .sort({ createdAt: -1 }); 
 
     res.status(200).json(tasks);

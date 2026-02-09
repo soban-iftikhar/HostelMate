@@ -1,9 +1,47 @@
 import { useState } from 'react';
-import { CheckCircle } from 'lucide-react';
+import { CheckCircle, AlertCircle } from 'lucide-react';
+import axios from 'axios';
 
-function TaskCard({ title, reward, requesterName, roomNumber, description }) {
+function TaskCard({ taskId, title, reward, requesterName, roomNumber, description, onAcceptSuccess }) {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [accepting, setAccepting] = useState(false);
+  const [notification, setNotification] = useState(null);
   const shouldTruncate = description && description.length > 140;
+
+  const handleAccept = async () => {
+    try {
+      setAccepting(true);
+      setNotification(null);
+      const storedUser = localStorage.getItem('currentUser');
+      const currentUser = storedUser ? JSON.parse(storedUser) : null;
+
+      if (!currentUser || !currentUser._id) {
+        setNotification({ type: 'error', message: 'Please log in to accept tasks' });
+        setAccepting(false);
+        return;
+      }
+
+      await axios.put('http://localhost:5000/api/tasks/accept', {
+        taskId: taskId,
+        helperId: currentUser._id
+      });
+
+      setNotification({ type: 'success', message: 'Favor accepted! Check Activity page.' });
+      
+      // Call parent callback to refresh the list after a short delay
+      setTimeout(() => {
+        if (onAcceptSuccess) {
+          onAcceptSuccess();
+        }
+      }, 1500);
+    } catch (error) {
+      console.error('Failed to accept task:', error);
+      setNotification({ type: 'error', message: error.response?.data?.message || 'Failed to accept task. Please try again.' });
+    } finally {
+      setAccepting(false);
+    }
+  };
+  
   return (
     <div className="bg-white rounded-xl border border-slate-200 shadow-md hover:shadow-lg transition-shadow duration-300 p-6 flex h-full flex-col">
       {/* Title and Reward Badge */}
@@ -51,10 +89,38 @@ function TaskCard({ title, reward, requesterName, roomNumber, description }) {
       </div>
 
       {/* Accept Button */}
-      <button className="w-full bg-cyan-600 hover:bg-cyan-700 text-white font-semibold py-3 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2 shadow-md mt-auto">
+      <button 
+        onClick={handleAccept}
+        disabled={accepting}
+        className="w-full bg-cyan-600 hover:bg-cyan-700 text-white font-semibold py-3 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2 shadow-md mt-auto disabled:opacity-60 disabled:cursor-not-allowed"
+      >
         <CheckCircle className="w-5 h-5" />
-        Accept Favor
+        {accepting ? 'Accepting...' : 'Accept Favor'}
       </button>
+
+      {/* Notification */}
+      {notification && (
+        <div className="fixed top-4 right-4 z-50 animate-in slide-in-from-top-5 fade-in duration-300">
+          <div className={`flex items-center gap-3 ${notification.type === 'success' ? 'bg-emerald-50 border-emerald-200 text-emerald-800' : 'bg-rose-50 border-rose-200 text-rose-800'} border rounded-lg shadow-lg p-4 min-w-[320px] max-w-md`}>
+            {notification.type === 'success' ? (
+              <CheckCircle className="w-5 h-5 text-emerald-600" />
+            ) : (
+              <AlertCircle className="w-5 h-5 text-rose-600" />
+            )}
+            <p className="flex-1 text-sm font-medium">
+              {notification.message}
+            </p>
+            <button
+              onClick={() => setNotification(null)}
+              className="hover:opacity-70 transition-opacity"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
