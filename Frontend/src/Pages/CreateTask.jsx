@@ -101,35 +101,35 @@ function CreateTask() {
 
   if (loading) {
     return (
-      <div className="flex-1 flex items-center justify-center p-8">
-        <div className="text-slate-600">Loading...</div>
+      <div className="flex-1 flex items-center justify-center p-4 sm:p-8">
+        <div className="text-slate-600 text-sm">Loading...</div>
       </div>
     );
   }
 
   return (
-    <div className="flex-1 overflow-auto p-8">
+    <div className="flex-1 overflow-auto p-4 sm:p-8">
       <div className="max-w-3xl mx-auto">
-        <div className="mb-8">
+        <div className="mb-6 sm:mb-8">
           <span className="inline-block text-xs font-bold text-cyan-600 uppercase tracking-wider mb-2">
             New Request
           </span>
-          <h1 className="text-4xl font-bold text-slate-900 mb-2">Create New Task</h1>
-          <p className="text-slate-600 text-base">
+          <h1 className="text-2xl sm:text-4xl font-bold text-slate-900 mb-2">Create New Task</h1>
+          <p className="text-slate-600 text-xs sm:text-base">
             Request help from your hostel mates and reward them with karma points
           </p>
         </div>
 
         <div className="bg-white rounded-2xl shadow-md border border-slate-200">
-          <form onSubmit={handleCreateTask} className="p-6 space-y-5">
+          <form onSubmit={handleCreateTask} className="p-4 sm:p-6 space-y-4 sm:space-y-5">
             {createError && (
-              <div className="bg-rose-50 border border-rose-200 text-rose-700 px-4 py-3 rounded-lg text-sm">
+              <div className="bg-rose-50 border border-rose-200 text-rose-700 px-3 sm:px-4 py-2 sm:py-3 rounded-lg text-xs sm:text-sm">
                 {createError}
               </div>
             )}
 
-            <div className="bg-cyan-50 border border-cyan-200 px-4 py-3 rounded-lg">
-              <p className="text-sm text-cyan-800">
+            <div className="bg-cyan-50 border border-cyan-200 px-3 sm:px-4 py-2 sm:py-3 rounded-lg">
+              <p className="text-xs sm:text-sm text-cyan-800">
                 <span className="font-semibold">Available Balance:</span> {currentUserKarma} karma points
               </p>
             </div>
@@ -145,7 +145,7 @@ function CreateTask() {
                 value={createForm.title}
                 onChange={handleCreateChange}
                 placeholder="e.g., Help with laundry"
-                className="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-sm focus:ring-2 focus:ring-cyan-500 focus:border-transparent outline-none transition"
+                className="w-full rounded-lg border border-slate-300 px-3 sm:px-4 py-2 sm:py-2.5 text-sm focus:ring-2 focus:ring-cyan-500 focus:border-transparent outline-none transition"
                 disabled={creating}
               />
             </div>
@@ -160,8 +160,8 @@ function CreateTask() {
                 value={createForm.description}
                 onChange={handleCreateChange}
                 placeholder="Describe the task in detail..."
-                rows="5"
-                className="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-sm focus:ring-2 focus:ring-cyan-500 focus:border-transparent outline-none transition resize-none"
+                rows="4"
+                className="w-full rounded-lg border border-slate-300 px-3 sm:px-4 py-2 sm:py-2.5 text-sm focus:ring-2 focus:ring-cyan-500 focus:border-transparent outline-none transition resize-none"
                 disabled={creating}
               />
             </div>
@@ -179,7 +179,7 @@ function CreateTask() {
                 placeholder="Enter points to reward"
                 min="1"
                 max={currentUserKarma}
-                className="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-sm focus:ring-2 focus:ring-cyan-500 focus:border-transparent outline-none transition"
+                className="w-full rounded-lg border border-slate-300 px-3 sm:px-4 py-2 sm:py-2.5 text-sm focus:ring-2 focus:ring-cyan-500 focus:border-transparent outline-none transition"
                 disabled={creating}
               />
               <p className="mt-2 text-xs text-slate-500">
@@ -187,11 +187,11 @@ function CreateTask() {
               </p>
             </div>
 
-            <div className="flex items-center gap-3 pt-4">
+            <div className="flex flex-col sm:flex-row items-stretch gap-3 pt-3 sm:pt-4">
               <button
                 type="submit"
                 disabled={creating}
-                className="flex-1 inline-flex items-center justify-center gap-2 px-6 py-3 rounded-lg text-sm font-semibold bg-cyan-600 text-white hover:bg-cyan-700 disabled:opacity-60 transition duration-200"
+                className="flex-1 inline-flex items-center justify-center gap-2 px-4 sm:px-6 py-2 sm:py-3 rounded-lg text-xs sm:text-sm font-semibold bg-cyan-600 text-white hover:bg-cyan-700 disabled:opacity-60 transition duration-200"
               >
                 {creating ? 'Creating...' : 'Create Task'}
               </button>
@@ -199,7 +199,7 @@ function CreateTask() {
                 type="button"
                 onClick={() => navigate('/dashboard/activity')}
                 disabled={creating}
-                className="flex-1 inline-flex items-center justify-center gap-2 px-6 py-3 rounded-lg text-sm font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 disabled:opacity-60 transition duration-200"
+                className="flex-1 inline-flex items-center justify-center gap-2 px-4 sm:px-6 py-2 sm:py-3 rounded-lg text-xs sm:text-sm font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 disabled:opacity-60 transition duration-200"
               >
                 Cancel
               </button>

@@ -200,39 +200,39 @@ function Activity() {
   }
   
   return (
-    <div className="flex-1 overflow-auto p-8">
+    <div className="flex-1 overflow-auto p-4 sm:p-8">
       <div className="max-w-6xl mx-auto">
-        <div className="mb-8 flex justify-between items-start">
+        <div className="mb-6 sm:mb-8 flex flex-col sm:flex-row justify-between items-start gap-4">
           <div>
             <span className="inline-block text-xs font-bold text-cyan-600 uppercase tracking-wider mb-2">Your History</span>
-            <h1 className="text-4xl font-bold text-slate-900 mb-2">My Activity</h1>
-            <p className="text-slate-600 text-base">
+            <h1 className="text-2xl sm:text-4xl font-bold text-slate-900 mb-2">My Activity</h1>
+            <p className="text-slate-600 text-sm sm:text-base">
               Track and manage your created tasks and accepted favors
             </p>
           </div>
           <button
             type="button"
             onClick={() => navigate('/dashboard/create-task')}
-            className="inline-flex items-center gap-2 px-5 py-3 rounded-lg text-sm font-semibold bg-cyan-600 text-white hover:bg-cyan-700 shadow-md hover:shadow-lg transition duration-200"
+            className="inline-flex items-center gap-2 px-4 sm:px-5 py-2 sm:py-3 rounded-lg text-xs sm:text-sm font-semibold bg-cyan-600 text-white hover:bg-cyan-700 shadow-md hover:shadow-lg transition duration-200 whitespace-nowrap"
           >
-            <Plus className="w-5 h-5" />
+            <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
             Create New Task
           </button>
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-3 sm:space-y-4">
           {activities.map((activity) => (
             <div
               key={activity._id}
-              className="bg-white rounded-xl border border-slate-200 shadow-md p-6 hover:shadow-lg transition-shadow duration-300"
+              className="bg-white rounded-xl border border-slate-200 shadow-md p-4 sm:p-6 hover:shadow-lg transition-shadow duration-300"
             >
-              <div className="flex items-start justify-between gap-4">
-                <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-2">
+              <div className="flex flex-col sm:flex-row items-start justify-between gap-3 sm:gap-4">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 sm:gap-3 mb-2">
                     {getStatusIcon(activity.status)}
-                    <h3 className="text-lg font-bold text-slate-900">{activity.title}</h3>
+                    <h3 className="text-base sm:text-lg font-bold text-slate-900 truncate">{activity.title}</h3>
                   </div>
-                  <p className="text-sm text-slate-600 mb-3">
+                  <p className="text-xs sm:text-sm text-slate-600 mb-3">
                     <span className="font-semibold text-slate-900">{activity.requester?.name}</span>
                     <span className="text-slate-500"> • Room {activity.requester?.roomNo}</span>
                   </p>
@@ -240,10 +240,10 @@ function Activity() {
                     <button
                       type="button"
                       onClick={() => openDetails(activity)}
-                      className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200"
+                      className="inline-flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg text-[10px] sm:text-xs font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200"
                     >
-                      <Eye className="w-4 h-4" />
-                      View Details
+                      <Eye className="w-3 h-3 sm:w-4 sm:h-4" />
+                      View
                     </button>
                     {activity.status === 'pending' && (
                       <>
@@ -253,18 +253,18 @@ function Activity() {
                             openDetails(activity);
                             setIsEditing(true);
                           }}
-                          className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold bg-cyan-50 text-cyan-700 hover:bg-cyan-100"
+                          className="inline-flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg text-[10px] sm:text-xs font-semibold bg-cyan-50 text-cyan-700 hover:bg-cyan-100"
                         >
-                          <Pencil className="w-4 h-4" />
+                          <Pencil className="w-3 h-3 sm:w-4 sm:h-4" />
                           Update
                         </button>
                         <button
                           type="button"
                           onClick={() => handleDelete(activity._id)}
                           disabled={deleting}
-                          className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold bg-rose-50 text-rose-700 hover:bg-rose-100 disabled:opacity-60"
+                          className="inline-flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg text-[10px] sm:text-xs font-semibold bg-rose-50 text-rose-700 hover:bg-rose-100 disabled:opacity-60"
                         >
-                          <Trash2 className="w-4 h-4" />
+                          <Trash2 className="w-3 h-3 sm:w-4 sm:h-4" />
                           Delete
                         </button>
                       </>
@@ -274,10 +274,10 @@ function Activity() {
                         type="button"
                         onClick={() => handleComplete(activity._id, activity)}
                         disabled={completing}
-                        className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-50 text-emerald-700 hover:bg-emerald-100 disabled:opacity-60"
+                        className="inline-flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg text-[10px] sm:text-xs font-semibold bg-emerald-50 text-emerald-700 hover:bg-emerald-100 disabled:opacity-60"
                       >
-                        <CheckCircle className="w-4 h-4" />
-                        Mark as Done
+                        <CheckCircle className="w-3 h-3 sm:w-4 sm:h-4" />
+                        Mark Done
                       </button>
                     )}
                     {activity.status === 'pending-verification' && activity.requester && (activity.requester._id === currentUserId || activity.requester === currentUserId) && (
@@ -285,24 +285,24 @@ function Activity() {
                         type="button"
                         onClick={() => handleComplete(activity._id, activity)}
                         disabled={completing}
-                        className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-50 text-emerald-700 hover:bg-emerald-100 disabled:opacity-60"
+                        className="inline-flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg text-[10px] sm:text-xs font-semibold bg-emerald-50 text-emerald-700 hover:bg-emerald-100 disabled:opacity-60"
                       >
-                        <CheckCircle className="w-4 h-4" />
-                        Approve Completion
+                        <CheckCircle className="w-3 h-3 sm:w-4 sm:h-4" />
+                        Approve
                       </button>
                     )}
                     {activity.status === 'pending-verification' && activity.helper && (activity.helper._id === currentUserId || activity.helper === currentUserId) && (
-                      <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold bg-purple-50 text-purple-700">
-                        <Clock className="w-4 h-4" />
-                        Waiting for Approval
+                      <span className="inline-flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg text-[10px] sm:text-xs font-semibold bg-purple-50 text-purple-700">
+                        <Clock className="w-3 h-3 sm:w-4 sm:h-4" />
+                        Waiting
                       </span>
                     )}
                   </div>
                 </div>
-                <div className="text-right">
-                  <div className="text-sm font-bold text-emerald-600 mb-2">+{activity.rewardPoints} pts</div>
-                  <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold border ${getStatusColor(activity.status)}`}>
-                    {activity.status === 'pending-verification' ? 'Pending Verification' : activity.status.charAt(0).toUpperCase() + activity.status.slice(1)}
+                <div className="text-right flex-shrink-0">
+                  <div className="text-xs sm:text-sm font-bold text-emerald-600 mb-2">+{activity.rewardPoints} pts</div>
+                  <span className={`inline-flex items-center px-2 sm:px-3 py-1 rounded-full text-xs font-semibold border ${getStatusColor(activity.status)}`}>
+                    {activity.status === 'pending-verification' ? 'Pending' : activity.status.charAt(0).toUpperCase() + activity.status.slice(1)}
                   </span>
                 </div>
               </div>
@@ -313,41 +313,41 @@ function Activity() {
 
       {selectedActivity && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4">
-          <div className="w-full max-w-2xl rounded-2xl bg-white shadow-2xl border border-slate-200">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200">
+          <div className="w-full max-w-2xl rounded-2xl bg-white shadow-2xl border border-slate-200 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b border-slate-200 sticky top-0 bg-white">
               <div>
-                <h2 className="text-xl font-bold text-slate-900">Activity Details</h2>
-                <p className="text-sm text-slate-500">Review or update your activity</p>
+                <h2 className="text-lg sm:text-xl font-bold text-slate-900">Activity Details</h2>
+                <p className="text-xs sm:text-sm text-slate-500">Review or update your activity</p>
               </div>
               <button
                 type="button"
                 onClick={closeDetails}
-                className="p-2 rounded-lg hover:bg-slate-100 text-slate-500"
+                className="p-2 rounded-lg hover:bg-slate-100 text-slate-500 flex-shrink-0"
               >
-                <X className="w-5 h-5" />
+                <X className="w-4 h-4 sm:w-5 sm:h-5" />
               </button>
             </div>
 
-            <div className="px-6 py-5 space-y-4">
-              <div className="flex flex-wrap items-center gap-3">
+            <div className="px-4 sm:px-6 py-4 sm:py-5 space-y-4">
+              <div className="flex flex-wrap items-center gap-2 sm:gap-3">
                 {getStatusIcon(selectedActivity.status)}
-                <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold border ${getStatusColor(selectedActivity.status)}`}>
+                <span className={`inline-flex items-center px-2 sm:px-3 py-1 rounded-full text-xs font-semibold border ${getStatusColor(selectedActivity.status)}`}>
                   {selectedActivity.status.charAt(0).toUpperCase() + selectedActivity.status.slice(1)}
                 </span>
-                <span className="text-sm font-semibold text-emerald-600">+{selectedActivity.rewardPoints} pts</span>
+                <span className="text-xs sm:text-sm font-semibold text-emerald-600">+{selectedActivity.rewardPoints} pts</span>
               </div>
 
               {!isEditing ? (
                 <div className="space-y-3">
                   <div>
                     <p className="text-xs uppercase tracking-wider text-slate-500">Title</p>
-                    <p className="text-base font-semibold text-slate-900">{selectedActivity.title}</p>
+                    <p className="text-sm sm:text-base font-semibold text-slate-900">{selectedActivity.title}</p>
                   </div>
                   <div>
                     <p className="text-xs uppercase tracking-wider text-slate-500">Description</p>
-                    <p className="text-sm text-slate-700">{selectedActivity.description || 'No description provided.'}</p>
+                    <p className="text-xs sm:text-sm text-slate-700">{selectedActivity.description || 'No description provided.'}</p>
                   </div>
-                  <div className="text-sm text-slate-600">
+                  <div className="text-xs sm:text-sm text-slate-600">
                     Requested by <span className="font-semibold text-slate-900">{selectedActivity.requester?.name}</span> (Room {selectedActivity.requester?.roomNo})
                   </div>
                 </div>
