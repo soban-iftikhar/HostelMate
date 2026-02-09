@@ -2,6 +2,7 @@ import { Navigate, Route, Routes, useNavigate } from "react-router-dom";
 import Login from "./Pages/Login";
 import Signup from "./Pages/Signup";
 import Activity from "./Pages/Activity";
+import History from "./Pages/History";
 import Leaderboard from "./Pages/Leaderboard";
 import Available, { AvailableList } from "./Pages/AvailableFavors";
 import Privacy from "./Pages/Privacy";
@@ -34,6 +35,7 @@ function App() {
       >
         <Route index element={<AvailableList />} />
         <Route path="activity" element={<Activity />} />
+        <Route path="history" element={<History />} />
         <Route path="leaderboard" element={<Leaderboard />} />
       </Route>
       <Route path="/privacy" element={<Privacy />} />

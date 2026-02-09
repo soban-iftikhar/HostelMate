@@ -1,10 +1,11 @@
 import { NavLink } from 'react-router-dom';
-import { Heart, Activity, Trophy } from 'lucide-react';
+import { Heart, Activity, Trophy, History as HistoryIcon } from 'lucide-react';
 
 export default function Sidebar() {
   const navItems = [
     { id: 'available', label: 'Available Favors', icon: Heart, to: '/dashboard' },
     { id: 'activity', label: 'My Activity', icon: Activity, to: '/dashboard/activity' },
+    { id: 'history', label: 'History', icon: HistoryIcon, to: '/dashboard/history' },
     { id: 'leaderboard', label: 'Leaderboard', icon: Trophy, to: '/dashboard/leaderboard' },
   ];
 

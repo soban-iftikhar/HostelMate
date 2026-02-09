@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 import Task from '../models/Task.js';
 import User from '../models/User.js';
+import History from '../models/History.js';
 
 // Create a new task
 const createTask = async (req, res) => {
@@ -91,9 +92,19 @@ const completeTask = async (req, res) => {
       $inc: { karmaPoints: currentTask.rewardPoints }
     });
 
-    // Mark task as completed
-    currentTask.status = 'completed';
-    await currentTask.save();
+    // Save history entry and remove task from active list
+    await History.create({
+      taskId: currentTask._id,
+      title: currentTask.title,
+      description: currentTask.description,
+      rewardPoints: currentTask.rewardPoints,
+      requester: currentTask.requester,
+      helper: currentTask.helper,
+      status: 'completed',
+      completedAt: new Date()
+    });
+
+    await Task.findByIdAndDelete(currentTask._id);
 
     res.status(200).json({ message: 'Task completed! Points awarded to helper.' });
   } catch (error) {
@@ -108,15 +119,41 @@ const getMyTasks = async (req, res) => {
 
     // Fetch tasks where I am the requester OR the helper
     const tasks = await Task.find({
-      $or: [
-        { requester: userId },
-        { helper: userId }
+      $and: [
+        {
+          $or: [
+            { requester: userId },
+            { helper: userId }
+          ]
+        },
+        { status: { $ne: 'completed' } }
       ]
     })
       .populate('requester', 'name roomNo')
       .sort({ createdAt: -1 }); 
 
     res.status(200).json(tasks);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// Get user history (completed tasks)
+const getHistory = async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    const history = await History.find({
+      $or: [
+        { requester: userId },
+        { helper: userId }
+      ]
+    })
+      .populate('requester', 'name roomNo')
+      .populate('helper', 'name roomNo')
+      .sort({ completedAt: -1, createdAt: -1 });
+
+    res.status(200).json(history);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -200,6 +237,7 @@ export {
   acceptTask,
   completeTask,
   getMyTasks,
+  getHistory,
   updateOwnTask,
   deleteOwnTask
 };
