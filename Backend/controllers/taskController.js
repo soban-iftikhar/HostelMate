@@ -6,13 +6,10 @@ import History from '../models/History.js';
 // Create a new task
 const createTask = async (req, res) => {
   try {
-    const { requester, rewardPoints} = req.body;
-    const requesterId = typeof requester === 'string' ? requester.trim() : requester;
+    const { rewardPoints, ...taskData } = req.body;
+    const requesterId = req.userId; // Get userId from JWT middleware
 
     // Input validation
-    if (!mongoose.Types.ObjectId.isValid(requesterId)) {
-      return res.status(400).json({ message: 'Invalid requester id' });
-    }
     if (rewardPoints <= 0) {
       return res.status(400).json({ message: 'Reward points must be positive' });
     }
@@ -31,7 +28,7 @@ const createTask = async (req, res) => {
     await user.save();
 
     // Save the task
-    const newTask = new Task({ ...req.body, requester: requesterId });
+    const newTask = new Task({ ...taskData, requester: requesterId, rewardPoints });
     const savedTask = await newTask.save();
     res.status(201).json(savedTask);
 
@@ -43,7 +40,7 @@ const createTask = async (req, res) => {
 // Get available tasks excluding those created by the requesting user
 const getAvailableTasks = async (req, res) => {
   try {
-    const { userId } = req.query;
+    const userId = req.userId; // Get userId from JWT middleware
 
     // Fetch tasks that are pending and not created by the requesting user and populate requester details
     const tasks = await Task.find({
@@ -60,7 +57,8 @@ const getAvailableTasks = async (req, res) => {
 // Accept Task
 const acceptTask = async (req, res) => {
   try {
-    const { taskId, helperId } = req.body;
+    const { taskId } = req.body;
+    const helperId = req.userId; // Get userId from JWT middleware
 
     const updatedTask = await Task.findByIdAndUpdate(
       taskId,
@@ -80,7 +78,8 @@ const acceptTask = async (req, res) => {
 const completeTask = async (req, res) => {
   try {
     const { id } = req.params;
-    const { userId, role } = req.body; // role: 'helper' or 'requester'
+    const { role } = req.body; // role: 'helper' or 'requester'
+    const userId = req.userId; // Get userId from JWT middleware
 
     const currentTask = await Task.findById(id);
     if (!currentTask) {
@@ -132,7 +131,7 @@ const completeTask = async (req, res) => {
 // Get own tasks
 const getMyTasks = async (req, res) => {
   try {
-    const { userId } = req.params;
+    const userId = req.userId; // Get userId from JWT middleware
 
     // Fetch tasks where I am the requester OR the helper
     const tasks = await Task.find({
@@ -159,7 +158,7 @@ const getMyTasks = async (req, res) => {
 // Get user history (completed tasks)
 const getHistory = async (req, res) => {
   try {
-    const { userId } = req.params;
+    const userId = req.userId; // Get userId from JWT middleware
 
     const history = await History.find({
       $or: [
@@ -181,7 +180,8 @@ const getHistory = async (req, res) => {
 const updateOwnTask = async (req, res) => {
   try {
     const { id } = req.params;
-    const { userId, ...updateData } = req.body; // Assume userId is sent from frontend
+    const userId = req.userId; // Get userId from JWT middleware
+    const updateData = req.body;
 
     const task = await Task.findById(id);
     if (!task) return res.status(404).json({ message: 'Task not found' });
@@ -230,7 +230,7 @@ const updateOwnTask = async (req, res) => {
 const deleteOwnTask = async (req, res) => {
   try {
     const { id } = req.params;
-    const { userId } = req.body;
+    const userId = req.userId; // Get userId from JWT middleware
 
     const task = await Task.findById(id);
     if (!task) return res.status(404).json({ message: 'Task not found' });

@@ -41,10 +41,14 @@ function Navbar() {
   };
 
   useEffect(() => {
-    fetchUserData();
+    (async () => {
+      await fetchUserData();
+    })();
 
     const handleKarmaUpdate = () => {
-      fetchUserData();
+      (async () => {
+        await fetchUserData();
+      })();
     };
 
     window.addEventListener('karma-updated', handleKarmaUpdate);
