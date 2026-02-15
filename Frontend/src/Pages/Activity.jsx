@@ -19,16 +19,14 @@ function Activity() {
     rewardPoints: '',
     status: 'pending'
   });
-  const [currentUserId, setCurrentUserId] = useState(null);
+  const [completing, setCompleting] = useState(false);
   const [updating, setUpdating] = useState(false);
   const [deleting, setDeleting] = useState(false);
-  const [completing, setCompleting] = useState(false);
   const [notification, setNotification] = useState(null);
   const [confirmDialog, setConfirmDialog] = useState(null);
 
   const fetchActivities = async () => {
     try {
-      // No need to get userId, it's extracted from token
       const response = await apiClient.get('/tasks/myTasks');
       setActivities(response.data);
     } catch (error) {
@@ -38,7 +36,6 @@ function Activity() {
     }
   };
 
- 
 
   const getStatusIcon = (status) => {
     switch (status) {
@@ -69,7 +66,8 @@ function Activity() {
         return '';
     }
   };
- useEffect(() => {
+
+  useEffect(() => {
     fetchActivities();
   }, []);
 
@@ -95,7 +93,7 @@ function Activity() {
   };
 
   const handleUpdate = async () => {
-    if (!selectedActivity || !currentUserId) return;
+    if (!selectedActivity || !user._id) return;
     try {
       setUpdating(true);
       if (editForm.status === 'completed') {
@@ -261,7 +259,7 @@ function Activity() {
                         </button>
                       </>
                     )}
-                    {activity.status === 'in-progress' && activity.helper && (activity.helper._id === currentUserId || activity.helper === currentUserId) && (
+                    {activity.status === 'in-progress' && activity.helper && (activity.helper._id === user._id || activity.helper === user._id) && (
                       <button
                         type="button"
                         onClick={() => handleComplete(activity._id, activity)}
@@ -272,7 +270,7 @@ function Activity() {
                         Mark Done
                       </button>
                     )}
-                    {activity.status === 'pending-verification' && activity.requester && (activity.requester._id === currentUserId || activity.requester === currentUserId) && (
+                    {activity.status === 'pending-verification' && activity.requester && (activity.requester._id === user._id || activity.requester === user._id) && (
                       <button
                         type="button"
                         onClick={() => handleComplete(activity._id, activity)}
@@ -283,7 +281,7 @@ function Activity() {
                         Approve
                       </button>
                     )}
-                    {activity.status === 'pending-verification' && activity.helper && (activity.helper._id === currentUserId || activity.helper === currentUserId) && (
+                    {activity.status === 'pending-verification' && activity.helper && (activity.helper._id === user._id || activity.helper === user._id) && (
                       <span className="inline-flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg text-[10px] sm:text-xs font-semibold bg-purple-50 text-purple-700">
                         <Clock className="w-3 h-3 sm:w-4 sm:h-4" />
                         Waiting
@@ -410,7 +408,7 @@ function Activity() {
                 )}
               </div>
               <div className="flex items-center gap-2">
-                {selectedActivity.status === 'in-progress' && selectedActivity.helper && (selectedActivity.helper._id === currentUserId || selectedActivity.helper === currentUserId) && (
+                {selectedActivity.status === 'in-progress' && selectedActivity.helper && (selectedActivity.helper._id === user._id || selectedActivity.helper === user._id) && (
                   <button
                     type="button"
                     onClick={() => handleComplete(selectedActivity._id, selectedActivity)}
@@ -420,7 +418,7 @@ function Activity() {
                     Mark as Done
                   </button>
                 )}
-                {selectedActivity.status === 'pending-verification' && selectedActivity.requester && (selectedActivity.requester._id === currentUserId || selectedActivity.requester === currentUserId) && (
+                {selectedActivity.status === 'pending-verification' && selectedActivity.requester && (selectedActivity.requester._id === user._id || selectedActivity.requester === user._id) && (
                   <button
                     type="button"
                     onClick={() => handleComplete(selectedActivity._id, selectedActivity)}

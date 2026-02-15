@@ -49,7 +49,6 @@ function History() {
             </div>
           ) : (
             history.map((item) => {
-              // Check if current user is the requester (posted the task) or helper (completed the task)
               const isRequester = item.requester?._id === user?._id;
               const pointsColor = isRequester ? 'text-rose-600' : 'text-emerald-600';
               const pointsSign = isRequester ? '-' : '+';
@@ -81,7 +80,8 @@ function History() {
                   </div>
                 </div>
               </div>
-            );})
+            );
+            })
           )}
         </div>
       </div>

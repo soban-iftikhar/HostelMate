@@ -19,7 +19,6 @@ function TaskCard({ taskId, title, reward, requesterName, roomNumber, descriptio
 
       setNotification({ type: 'success', message: 'Favor accepted! Check Activity page.' });
       
-      // Call parent callback to refresh the list after a short delay
       setTimeout(() => {
         if (onAcceptSuccess) {
           onAcceptSuccess();

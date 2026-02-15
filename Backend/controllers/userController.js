@@ -1,18 +1,8 @@
 import User from '../models/User.js';
 import jwt from 'jsonwebtoken';
 
+// Generates access and refresh JWT tokens for authenticated users
 const generateTokens = (userId) => {
-    // Debug: Check if env variables are loaded
-    if (!process.env.ACCESS_TOKEN_SECRET) {
-        console.error('ACCESS_TOKEN_SECRET is not defined!');
-        console.error('Available env keys:', Object.keys(process.env).filter(k => k.includes('TOKEN')));
-        throw new Error('ACCESS_TOKEN_SECRET environment variable is not defined');
-    }
-    if (!process.env.REFRESH_TOKEN_SECRET) {
-        console.error('REFRESH_TOKEN_SECRET is not defined!');
-        throw new Error('REFRESH_TOKEN_SECRET environment variable is not defined');
-    }
-
     const accessToken = jwt.sign(
         { userId },
         process.env.ACCESS_TOKEN_SECRET,
@@ -28,24 +18,22 @@ const generateTokens = (userId) => {
     return { accessToken, refreshToken };
 };
 
+// Registers a new user with email, password, name and room number.
+// Returns user data and JWT tokens on success.
 const registerUser = async (req, res) => {
     try {
         const { email } = req.body;
 
-        // Check if user already exists
         const existingUser = await User.findOne({ email });
         if (existingUser) {
             return res.status(400).json({ message: "User already exists" });
         }
 
-        // Create and Save
         const userData = new User(req.body);
         const savedUser = await userData.save();
 
-        // Generate tokens
         const { accessToken, refreshToken } = generateTokens(savedUser._id);
 
-        // Convert to object and remove password for security
         const userResponse = savedUser.toObject();
         delete userResponse.password;
 
@@ -59,22 +47,20 @@ const registerUser = async (req, res) => {
     }
 };
 
+// Authenticates user with email and password credentials.
+// Verifies credentials and returns user data with JWT tokens.
 const loginUser = async (req, res) => {
     try {
         const { email, password } = req.body;
 
-        // Find user by email
         const user = await User.findOne({ email });
 
-        // Check if user exists AND password matches
         if (!user || user.password !== password) {
             return res.status(401).json({ message: "Invalid email or password" });
         }
 
-        // Generate tokens
         const { accessToken, refreshToken } = generateTokens(user._id);
 
-        // Success! Return user data (minus password) and tokens
         const userResponse = user.toObject();
         delete userResponse.password;
         
@@ -83,25 +69,23 @@ const loginUser = async (req, res) => {
             accessToken,
             refreshToken
         });
-    }
-    catch (error) {
+    } catch (error) {
         res.status(500).json({ message: error.message });
     }
-}
+};
 
-
+// Retrieves the profile information of the authenticated user.
+// Used to fetch user details for display in navbar and other components.
 const getUserProfile = async (req, res) => {
     try {
-        // Get userId from JWT middleware
-        const userId = req.userId || req.params.userId;
+        const userId = req.userId;
 
-        // Find user by ID
         const user = await User.findById(userId);
+        
         if (!user) {
             return res.status(404).json({ message: "User not found" });
         }
 
-        // Return user data (minus password)
         const userResponse = user.toObject();
         delete userResponse.password;
 
@@ -109,18 +93,18 @@ const getUserProfile = async (req, res) => {
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
-}
+};
 
+// Fetches top 10 users ranked by karma points for the leaderboard.
+// Returns user rankings with names, room numbers and karma points.
 const getLeaderboard = async (req, res) => {
     try {
-        // Fetch top users sorted by score in descending order
         const topUsers = await User.find().sort({ karmaPoints: -1 }).limit(10);
 
-        // Remove passwords from the response
         const leaderboard = topUsers.map(user => {
             const userObj = user.toObject();
             delete userObj.password;
-            delete userObj.email; // Optionally remove email for privacy
+            delete userObj.email;
             return userObj;
         });
 
@@ -128,7 +112,10 @@ const getLeaderboard = async (req, res) => {
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
-}
+};
+
+// Handles refresh token requests to generate new access tokens.
+// Validates refresh token and returns new access and refresh tokens.
 const refreshTokenHandler = async (req, res) => {
     try {
         const { refreshToken } = req.body;
@@ -149,4 +136,4 @@ const refreshTokenHandler = async (req, res) => {
     }
 };
 
-export { registerUser, loginUser, getUserProfile, getLeaderboard, refreshTokenHandler};
+export { registerUser, loginUser, getUserProfile, getLeaderboard, refreshTokenHandler };

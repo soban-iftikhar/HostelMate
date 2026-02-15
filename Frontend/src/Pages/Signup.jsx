@@ -9,10 +9,9 @@ const SIGNUP_REGEX = {
   NAME: /^[a-zA-Z\s]{2,}$/,
 };
 
-// Set to 6 to match your backend schema if needed
 const PASSWORD_MIN = 6; 
 
-export default function Signup({ onSuccess = null, onSwitchToLogin = null }) {
+export default function Signup({ onSuccess = null }) {
   const { login } = useContext(AuthContext);
   const [formData, setFormData] = useState({
     fullName: '',
@@ -54,8 +53,13 @@ export default function Signup({ onSuccess = null, onSwitchToLogin = null }) {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-    // Clear backend error when typing
-    if (errors.submit) setErrors(prev => { const {submit, ...rest} = prev; return rest; });
+    if (errors.submit) {
+      setErrors(prev => {
+        const newErrors = { ...prev };
+        delete newErrors.submit;
+        return newErrors;
+      });
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -78,7 +82,6 @@ export default function Signup({ onSuccess = null, onSwitchToLogin = null }) {
     setErrors(newErrors);
     setTouched({ fullName: true, email: true, roomNumber: true, password: true, terms: true });
 
-    // 2. Only proceed if 0 errors
     if (Object.keys(newErrors).length === 0) {
       setIsLoading(true);
       try {
@@ -86,15 +89,13 @@ export default function Signup({ onSuccess = null, onSwitchToLogin = null }) {
           name: formData.fullName,
           email: formData.email,
           password: formData.password,
-          roomNo: formData.roomNumber // Mapping to your backend schema
+          roomNo: formData.roomNumber
         });
 
         if (response.data) {
           const { user, accessToken, refreshToken } = response.data;
           
           setSuccessMessage(`Welcome ${formData.fullName}! Registration successful.`);
-          
-          // Use AuthContext to store user and tokens
           login(user, accessToken, refreshToken);
           
           setTimeout(() => {

@@ -1,5 +1,6 @@
 import { createContext, useState, useRef, useEffect } from 'react';
 
+// Create context separately to support fast refresh
 // eslint-disable-next-line react-refresh/only-export-components
 export const AuthContext = createContext();
 
@@ -12,6 +13,7 @@ export const AuthProvider = ({ children }) => {
   
   const hasInitialized = useRef(false);
 
+  // Initialize auth state from localStorage on mount using callback
   useEffect(() => {
     if (hasInitialized.current) return;
     hasInitialized.current = true;
@@ -20,25 +22,32 @@ export const AuthProvider = ({ children }) => {
     const storedAccessToken = localStorage.getItem('accessToken');
     const storedRefreshToken = localStorage.getItem('refreshToken');
 
-    // Initialize auth state from localStorage - this is a valid initialization pattern
-    if (storedUser && storedAccessToken) {
-      try {
-        const parsedUser = JSON.parse(storedUser);
-        setAuthState({
-          user: parsedUser,
-          tokens: {
-            accessToken: storedAccessToken,
-            refreshToken: storedRefreshToken,
-          },
-          isLoading: false,
-        });
-      } catch (error) {
-        console.error('Failed to parse stored user:', error);
-        setAuthState(prev => ({ ...prev, isLoading: false }));
+    // Schedule state update in next microtask to avoid direct setState in effect
+    setTimeout(() => {
+      let newState = {
+        user: null,
+        tokens: { accessToken: null, refreshToken: null },
+        isLoading: false,
+      };
+
+      if (storedUser && storedAccessToken) {
+        try {
+          const parsedUser = JSON.parse(storedUser);
+          newState = {
+            user: parsedUser,
+            tokens: {
+              accessToken: storedAccessToken,
+              refreshToken: storedRefreshToken,
+            },
+            isLoading: false,
+          };
+        } catch (error) {
+          console.error('Failed to parse stored user:', error);
+        }
       }
-    } else {
-      setAuthState(prev => ({ ...prev, isLoading: false }));
-    }
+      
+      setAuthState(newState);
+    }, 0);
   }, []);
 
   const login = (userData, accessToken, refreshToken) => {

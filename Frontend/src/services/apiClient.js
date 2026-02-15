@@ -1,11 +1,7 @@
 import axios from 'axios';
 
-// Use production API
 const API_BASE = 'https://hostelmate-94en.onrender.com/api';
 
-console.log('API Base URL:', API_BASE);
-
-// Create axios instance with default config
 const apiClient = axios.create({
   baseURL: API_BASE,
   headers: {
@@ -13,7 +9,6 @@ const apiClient = axios.create({
   },
 });
 
-// Add request interceptor to include token
 apiClient.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('accessToken');
@@ -33,7 +28,6 @@ apiClient.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
-    // If 403 Forbidden and haven't retried yet
     if (error.response?.status === 403 && !originalRequest._retry) {
       originalRequest._retry = true;
 
@@ -49,15 +43,12 @@ apiClient.interceptors.response.use(
 
         const { accessToken, refreshToken: newRefreshToken } = response.data;
 
-        // Update tokens
         localStorage.setItem('accessToken', accessToken);
         localStorage.setItem('refreshToken', newRefreshToken);
 
-        // Retry original request
         originalRequest.headers.Authorization = `Bearer ${accessToken}`;
         return apiClient(originalRequest);
       } catch (refreshError) {
-        // Refresh failed, logout user
         localStorage.removeItem('accessToken');
         localStorage.removeItem('refreshToken');
         localStorage.removeItem('currentUser');

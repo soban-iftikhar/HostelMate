@@ -6,7 +6,7 @@ import { AuthContext } from '../context/AuthContext';
 
 const LOGIN_REGEX = {
   EMAIL: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-  PASSWORD_MIN: 6, // Adjusted to match your backend schema
+  PASSWORD_MIN: 6,
 };
 
 export default function Login({ onSuccess = null }) {
@@ -40,7 +40,6 @@ export default function Login({ onSuccess = null }) {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
 
-    // Clear backend "submit" error when user starts typing again
     if (errors.submit) {
       const { submit, ...rest } = errors;
       setErrors(rest);
@@ -84,8 +83,6 @@ export default function Login({ onSuccess = null }) {
         const { user, accessToken, refreshToken } = response.data;
         
         setSuccessMessage(`Welcome back, ${user.name}!`);
-        
-        // Use AuthContext to store user and tokens
         login(user, accessToken, refreshToken);
         
         setFormData({ email: '', password: '' });
@@ -98,7 +95,6 @@ export default function Login({ onSuccess = null }) {
       }
     } catch (err) {
       setIsLoading(false);
-      // Capture the "Invalid email or password" message from your backend
       const message = err.response?.data?.message || "Server is offline. Please try again later.";
       setErrors({ submit: message });
     }
@@ -120,7 +116,7 @@ export default function Login({ onSuccess = null }) {
           {errors.submit && (
             <div className="mb-6 flex items-center gap-3 rounded-lg bg-red-50 border border-red-200 p-4">
               <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0" />
-              <p className="text-sm font-medium text-red-700">{errors.submit}</p>
+              <p className="text-sm ">{errors.submit}</p>
             </div>
           )}
 
