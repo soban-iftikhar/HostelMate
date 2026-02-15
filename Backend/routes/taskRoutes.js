@@ -5,6 +5,7 @@ import {
   acceptTask,
   completeTask,
   getMyTasks,
+  getHistory,
   updateOwnTask,
   deleteOwnTask
 } from '../controllers/taskController.js';
@@ -25,6 +26,9 @@ router.put('/complete/:id', completeTask);
 
 // Get user's tasks (both as requester and helper)
 router.get('/myTasks/:userId', getMyTasks);
+
+// Get user's completed task history
+router.get('/history/:userId', getHistory);
 
 // Update own task (only if pending)
 router.put('/update/:id', updateOwnTask);

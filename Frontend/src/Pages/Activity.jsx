@@ -16,6 +16,7 @@ function Activity() {
   const [currentUserId, setCurrentUserId] = useState(null);
   const [updating, setUpdating] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [completing, setCompleting] = useState(false);
 
   const fetchActivities = async () => {
     const storedUser = localStorage.getItem('currentUser');
@@ -89,6 +90,10 @@ function Activity() {
     if (!selectedActivity || !currentUserId) return;
     try {
       setUpdating(true);
+      if (editForm.status === 'completed') {
+        await handleComplete(selectedActivity._id);
+        return;
+      }
       const payload = {
         userId: currentUserId,
         title: editForm.title,
@@ -108,6 +113,20 @@ function Activity() {
       console.error('Failed to update activity:', error);
     } finally {
       setUpdating(false);
+    }
+  };
+
+  const handleComplete = async (activityId) => {
+    try {
+      setCompleting(true);
+      await axios.put(`http://localhost:5000/api/tasks/complete/${activityId}`);
+      await fetchActivities();
+      closeDetails();
+      window.dispatchEvent(new Event('karma-updated'));
+    } catch (error) {
+      console.error('Failed to complete activity:', error);
+    } finally {
+      setCompleting(false);
     }
   };
 
@@ -175,26 +194,40 @@ function Activity() {
                       <Eye className="w-4 h-4" />
                       View Details
                     </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        openDetails(activity);
-                        setIsEditing(true);
-                      }}
-                      className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold bg-cyan-50 text-cyan-700 hover:bg-cyan-100"
-                    >
-                      <Pencil className="w-4 h-4" />
-                      Update
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleDelete(activity._id)}
-                      disabled={deleting}
-                      className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold bg-rose-50 text-rose-700 hover:bg-rose-100 disabled:opacity-60"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                      Delete
-                    </button>
+                    {activity.status === 'pending' && (
+                      <>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            openDetails(activity);
+                            setIsEditing(true);
+                          }}
+                          className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold bg-cyan-50 text-cyan-700 hover:bg-cyan-100"
+                        >
+                          <Pencil className="w-4 h-4" />
+                          Update
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleDelete(activity._id)}
+                          disabled={deleting}
+                          className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold bg-rose-50 text-rose-700 hover:bg-rose-100 disabled:opacity-60"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                          Delete
+                        </button>
+                      </>
+                    )}
+                    {activity.status === 'in-progress' && (
+                      <button
+                        type="button"
+                        onClick={() => openDetails(activity)}
+                        className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
+                      >
+                        <CheckCircle className="w-4 h-4" />
+                        Mark Completed
+                      </button>
+                    )}
                   </div>
                 </div>
                 <div className="text-right">
@@ -288,6 +321,7 @@ function Activity() {
                         name="status"
                         value={editForm.status}
                         onChange={handleEditChange}
+                        disabled={selectedActivity.status !== 'pending'}
                         className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
                       >
                         <option value="pending">Pending</option>
@@ -302,18 +336,30 @@ function Activity() {
 
             <div className="flex items-center justify-between px-6 py-4 border-t border-slate-200">
               <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => handleDelete(selectedActivity._id)}
-                  disabled={deleting}
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold bg-rose-50 text-rose-700 hover:bg-rose-100 disabled:opacity-60"
-                >
-                  <Trash2 className="w-4 h-4" />
-                  Delete
-                </button>
+                {selectedActivity.status === 'pending' && (
+                  <button
+                    type="button"
+                    onClick={() => handleDelete(selectedActivity._id)}
+                    disabled={deleting}
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold bg-rose-50 text-rose-700 hover:bg-rose-100 disabled:opacity-60"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                    Delete
+                  </button>
+                )}
               </div>
               <div className="flex items-center gap-2">
-                {!isEditing ? (
+                {selectedActivity.status === 'in-progress' && (
+                  <button
+                    type="button"
+                    onClick={() => handleComplete(selectedActivity._id)}
+                    disabled={completing}
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-60"
+                  >
+                    Mark Completed
+                  </button>
+                )}
+                {selectedActivity.status === 'pending' && (!isEditing ? (
                   <button
                     type="button"
                     onClick={() => setIsEditing(true)}
@@ -331,7 +377,7 @@ function Activity() {
                   >
                     Save Changes
                   </button>
-                )}
+                ))}
                 <button
                   type="button"
                   onClick={closeDetails}
