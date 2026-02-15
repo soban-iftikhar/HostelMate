@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useState, useContext } from 'react';
 import { Link } from 'react-router-dom';
 import { Mail, Lock, Eye, EyeOff, AlertCircle, CheckCircle } from 'lucide-react';
-import axios from 'axios';
+import apiClient from '../services/apiClient';
+import { AuthContext } from '../context/AuthContext';
 
 const LOGIN_REGEX = {
   EMAIL: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
@@ -9,6 +10,7 @@ const LOGIN_REGEX = {
 };
 
 export default function Login({ onSuccess = null }) {
+  const { login } = useContext(AuthContext);
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -73,22 +75,25 @@ export default function Login({ onSuccess = null }) {
     setIsLoading(true);
     try {
       // API call to backend
-      const response = await axios.post('https://hostelmate-94en.onrender.com/api/users/login', {
+      const response = await apiClient.post('/users/login', {
         email: formData.email,
         password: formData.password
       });
 
       if (response.data) {
-        setSuccessMessage(`Welcome back, ${response.data.name}!`);
-        // Store the user object with the MongoDB _id
-        localStorage.setItem('currentUser', JSON.stringify(response.data));
+        const { user, accessToken, refreshToken } = response.data;
+        
+        setSuccessMessage(`Welcome back, ${user.name}!`);
+        
+        // Use AuthContext to store user and tokens
+        login(user, accessToken, refreshToken);
         
         setFormData({ email: '', password: '' });
         setErrors({});
         
         setTimeout(() => {
           setIsLoading(false);
-          if (onSuccess) onSuccess(response.data);
+          if (onSuccess) onSuccess(user);
         }, 1500);
       }
     } catch (err) {

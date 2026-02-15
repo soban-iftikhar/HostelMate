@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import apiClient from '../services/apiClient';
 import TaskCard from '../Components/TaskCard';
 import Navbar from '../Components/Navbar';
 import Sidebar from '../Components/Sidebar';
@@ -33,17 +33,7 @@ function AvailableList() {
     try {
       setLoading(true);
       
-      // Get current user from localStorage to filter tasks
-      const storedUser = localStorage.getItem('currentUser');
-      const currentUser = storedUser ? JSON.parse(storedUser) : null;
-
-      if (!currentUser || !currentUser._id) {
-        setError("Please log in to view available favors.");
-        setLoading(false);
-        return;
-      }
-
-      const response = await axios.get(`https://hostelmate-94en.onrender.com/api/tasks/available`);
+      const response = await apiClient.get('/tasks/available');
       
       setTasks(response.data);
       setLoading(false);

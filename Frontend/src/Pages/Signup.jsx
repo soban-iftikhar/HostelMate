@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useState, useContext } from 'react';
 import { Link } from 'react-router-dom';
 import { Mail, Lock, User, DoorOpen, Eye, EyeOff, AlertCircle, CheckCircle } from 'lucide-react';
-import axios from 'axios';
+import apiClient from '../services/apiClient';
+import { AuthContext } from '../context/AuthContext';
 
 const SIGNUP_REGEX = {
   EMAIL: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
@@ -12,6 +13,7 @@ const SIGNUP_REGEX = {
 const PASSWORD_MIN = 6; 
 
 export default function Signup({ onSuccess = null, onSwitchToLogin = null }) {
+  const { login } = useContext(AuthContext);
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
@@ -80,7 +82,7 @@ export default function Signup({ onSuccess = null, onSwitchToLogin = null }) {
     if (Object.keys(newErrors).length === 0) {
       setIsLoading(true);
       try {
-        const response = await axios.post('https://hostelmate-94en.onrender.com/api/users/register', {
+        const response = await apiClient.post('/users/register', {
           name: formData.fullName,
           email: formData.email,
           password: formData.password,
@@ -88,12 +90,16 @@ export default function Signup({ onSuccess = null, onSwitchToLogin = null }) {
         });
 
         if (response.data) {
+          const { user, accessToken, refreshToken } = response.data;
+          
           setSuccessMessage(`Welcome ${formData.fullName}! Registration successful.`);
-          localStorage.setItem('currentUser', JSON.stringify(response.data));
+          
+          // Use AuthContext to store user and tokens
+          login(user, accessToken, refreshToken);
           
           setTimeout(() => {
             setIsLoading(false);
-            if (onSuccess) onSuccess(response.data);
+            if (onSuccess) onSuccess(user);
           }, 1500);
         }
       } catch (err) {

@@ -1,10 +1,18 @@
-import dotenv from 'dotenv';
 import User from '../models/User.js';
 import jwt from 'jsonwebtoken';
 
-dotenv.config();
-
 const generateTokens = (userId) => {
+    // Debug: Check if env variables are loaded
+    if (!process.env.ACCESS_TOKEN_SECRET) {
+        console.error('ACCESS_TOKEN_SECRET is not defined!');
+        console.error('Available env keys:', Object.keys(process.env).filter(k => k.includes('TOKEN')));
+        throw new Error('ACCESS_TOKEN_SECRET environment variable is not defined');
+    }
+    if (!process.env.REFRESH_TOKEN_SECRET) {
+        console.error('REFRESH_TOKEN_SECRET is not defined!');
+        throw new Error('REFRESH_TOKEN_SECRET environment variable is not defined');
+    }
+
     const accessToken = jwt.sign(
         { userId },
         process.env.ACCESS_TOKEN_SECRET,

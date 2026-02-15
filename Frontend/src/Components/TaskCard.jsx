@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { CheckCircle, AlertCircle } from 'lucide-react';
-import axios from 'axios';
+import apiClient from '../services/apiClient';
 
 function TaskCard({ taskId, title, reward, requesterName, roomNumber, description, onAcceptSuccess }) {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -12,18 +12,9 @@ function TaskCard({ taskId, title, reward, requesterName, roomNumber, descriptio
     try {
       setAccepting(true);
       setNotification(null);
-      const storedUser = localStorage.getItem('currentUser');
-      const currentUser = storedUser ? JSON.parse(storedUser) : null;
 
-      if (!currentUser || !currentUser._id) {
-        setNotification({ type: 'error', message: 'Please log in to accept tasks' });
-        setAccepting(false);
-        return;
-      }
-
-      await axios.put('https://hostelmate-94en.onrender.com/api/tasks/accept', {
-        taskId: taskId,
-        helperId: currentUser._id
+      await apiClient.put('/tasks/accept', {
+        taskId: taskId
       });
 
       setNotification({ type: 'success', message: 'Favor accepted! Check Activity page.' });
