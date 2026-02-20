@@ -1,8 +1,10 @@
-import { CheckCircle, Clock, AlertCircle, Pencil, Trash2, Eye, X } from 'lucide-react';
+import { CheckCircle, Clock, AlertCircle, Pencil, Trash2, Eye, X, Plus } from 'lucide-react';
 import { useState, useEffect} from 'react';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
 function Activity() {
+  const navigate = useNavigate();
   const [activities, setActivities] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedActivity, setSelectedActivity] = useState(null);
@@ -144,6 +146,7 @@ function Activity() {
         closeDetails();
       }
       window.dispatchEvent(new Event('karma-updated'));
+      await fetchActivities(); // Refresh activities and karma
     } catch (error) {
       console.error('Failed to delete activity:', error);
     } finally {
@@ -157,16 +160,27 @@ function Activity() {
         <div className="text-slate-600">Loading your activity...</div>
       </div>
     );
-  } else{
+  }
+  
   return (
     <div className="flex-1 overflow-auto p-8">
       <div className="max-w-6xl mx-auto">
-        <div className="mb-8">
-          <span className="inline-block text-xs font-bold text-cyan-600 uppercase tracking-wider mb-2">Your History</span>
-          <h1 className="text-4xl font-bold text-slate-900 mb-2">My Activity</h1>
-          <p className="text-slate-600 text-base">
-            Track all your favors and activity history
-          </p>
+        <div className="mb-8 flex justify-between items-start">
+          <div>
+            <span className="inline-block text-xs font-bold text-cyan-600 uppercase tracking-wider mb-2">Your History</span>
+            <h1 className="text-4xl font-bold text-slate-900 mb-2">My Activity</h1>
+            <p className="text-slate-600 text-base">
+              Track and manage your created tasks and accepted favors
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => navigate('/dashboard/create-task')}
+            className="inline-flex items-center gap-2 px-5 py-3 rounded-lg text-sm font-semibold bg-cyan-600 text-white hover:bg-cyan-700 shadow-md hover:shadow-lg transition duration-200"
+          >
+            <Plus className="w-5 h-5" />
+            Create New Task
+          </button>
         </div>
 
         <div className="space-y-4">
@@ -393,5 +407,5 @@ function Activity() {
     </div>
   );
 }
-};
+
 export default Activity;
