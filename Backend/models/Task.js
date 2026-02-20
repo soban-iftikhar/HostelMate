@@ -15,8 +15,13 @@ const taskSchema = new mongoose.Schema({
     },
     status:{
         type:String,
-        enum:['pending','in-progress','completed'],
+        enum:['pending','in-progress','pending-verification','completed'],
         default:'pending'
+    },
+    completionRequestedBy:{
+        type:String,
+        enum:['helper','requester', null],
+        default:null
     },
     requester:{
         type:mongoose.Schema.Types.ObjectId,

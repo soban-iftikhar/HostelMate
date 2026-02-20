@@ -101,11 +101,13 @@ function AvailableList() {
             tasks.map((task) => (
               <TaskCard
                 key={task._id}
+                taskId={task._id}
                 title={task.title}
                 reward={task.rewardPoints}
                 description={task.description}
                 requesterName={task.requester?.name || "Unknown Resident"}
                 roomNumber={task.requester?.roomNo || "N/A"}
+                onAcceptSuccess={fetchAvailableTasks}
               />
             ))
           ) : (

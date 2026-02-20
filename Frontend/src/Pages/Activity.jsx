@@ -2,6 +2,8 @@ import { CheckCircle, Clock, AlertCircle, Pencil, Trash2, Eye, X, Plus } from 'l
 import { useState, useEffect} from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import Notification from '../Components/Notification';
+import ConfirmDialog from '../Components/ConfirmDialog';
 
 function Activity() {
   const navigate = useNavigate();
@@ -19,6 +21,8 @@ function Activity() {
   const [updating, setUpdating] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [completing, setCompleting] = useState(false);
+  const [notification, setNotification] = useState(null);
+  const [confirmDialog, setConfirmDialog] = useState(null);
 
   const fetchActivities = async () => {
     const storedUser = localStorage.getItem('currentUser');
@@ -45,7 +49,9 @@ function Activity() {
       case 'pending':
         return <Clock className="w-5 h-5 text-amber-600" />;
       case 'in-progress':
-        return <AlertCircle className="w-5 h-5 text-slate-400" />;
+        return <AlertCircle className="w-5 h-5 text-blue-400" />;
+      case 'pending-verification':
+        return <AlertCircle className="w-5 h-5 text-purple-600" />;
       default:
         return null;
     }
@@ -58,7 +64,9 @@ function Activity() {
       case 'pending':
         return 'bg-amber-50 text-amber-700 border-amber-200';
       case 'in-progress':
-        return 'bg-slate-50 text-slate-700 border-slate-200';
+        return 'bg-blue-50 text-blue-700 border-blue-200';
+      case 'pending-verification':
+        return 'bg-purple-50 text-purple-700 border-purple-200';
       default:
         return '';
     }
@@ -118,15 +126,35 @@ function Activity() {
     }
   };
 
-  const handleComplete = async (activityId) => {
+  const handleComplete = async (activityId, activity) => {
     try {
       setCompleting(true);
-      await axios.put(`http://localhost:5000/api/tasks/complete/${activityId}`);
+      
+      // Determine if current user is helper or requester
+      const isHelper = activity.helper?._id === currentUserId || activity.helper === currentUserId;
+      const isRequester = activity.requester?._id === currentUserId || activity.requester === currentUserId;
+      
+      let role;
+      if (isHelper) role = 'helper';
+      else if (isRequester) role = 'requester';
+      else {
+        setNotification({ type: 'error', message: 'You are not authorized to complete this task' });
+        setCompleting(false);
+        return;
+      }
+
+      const response = await axios.put(`http://localhost:5000/api/tasks/complete/${activityId}`, {
+        userId: currentUserId,
+        role: role
+      });
+      
+      setNotification({ type: 'success', message: response.data.message });
       await fetchActivities();
       closeDetails();
       window.dispatchEvent(new Event('karma-updated'));
     } catch (error) {
       console.error('Failed to complete activity:', error);
+      setNotification({ type: 'error', message: error.response?.data?.message || 'Failed to process completion' });
     } finally {
       setCompleting(false);
     }
@@ -134,24 +162,33 @@ function Activity() {
 
   const handleDelete = async (activityId) => {
     if (!currentUserId) return;
-    const confirmed = window.confirm('Delete this activity? Points will be refunded if applicable.');
-    if (!confirmed) return;
-    try {
-      setDeleting(true);
-      await axios.delete(`http://localhost:5000/api/tasks/delete/${activityId}`, {
-        data: { userId: currentUserId }
-      });
-      setActivities((prev) => prev.filter((item) => item._id !== activityId));
-      if (selectedActivity?._id === activityId) {
-        closeDetails();
-      }
-      window.dispatchEvent(new Event('karma-updated'));
-      await fetchActivities(); // Refresh activities and karma
-    } catch (error) {
-      console.error('Failed to delete activity:', error);
-    } finally {
-      setDeleting(false);
-    }
+    
+    setConfirmDialog({
+      title: 'Delete Task',
+      message: 'Are you sure you want to delete this task? Points will be refunded if applicable.',
+      onConfirm: async () => {
+        try {
+          setDeleting(true);
+          setConfirmDialog(null);
+          await axios.delete(`http://localhost:5000/api/tasks/delete/${activityId}`, {
+            data: { userId: currentUserId }
+          });
+          setActivities((prev) => prev.filter((item) => item._id !== activityId));
+          if (selectedActivity?._id === activityId) {
+            closeDetails();
+          }
+          window.dispatchEvent(new Event('karma-updated'));
+          await fetchActivities();
+          setNotification({ type: 'success', message: 'Task deleted and points refunded' });
+        } catch (error) {
+          console.error('Failed to delete activity:', error);
+          setNotification({ type: 'error', message: 'Failed to delete task' });
+        } finally {
+          setDeleting(false);
+        }
+      },
+      onCancel: () => setConfirmDialog(null)
+    });
   };
 
   if (loading) {
@@ -232,22 +269,40 @@ function Activity() {
                         </button>
                       </>
                     )}
-                    {activity.status === 'in-progress' && (
+                    {activity.status === 'in-progress' && activity.helper && (activity.helper._id === currentUserId || activity.helper === currentUserId) && (
                       <button
                         type="button"
-                        onClick={() => openDetails(activity)}
-                        className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
+                        onClick={() => handleComplete(activity._id, activity)}
+                        disabled={completing}
+                        className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-50 text-emerald-700 hover:bg-emerald-100 disabled:opacity-60"
                       >
                         <CheckCircle className="w-4 h-4" />
-                        Mark Completed
+                        Mark as Done
                       </button>
+                    )}
+                    {activity.status === 'pending-verification' && activity.requester && (activity.requester._id === currentUserId || activity.requester === currentUserId) && (
+                      <button
+                        type="button"
+                        onClick={() => handleComplete(activity._id, activity)}
+                        disabled={completing}
+                        className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-50 text-emerald-700 hover:bg-emerald-100 disabled:opacity-60"
+                      >
+                        <CheckCircle className="w-4 h-4" />
+                        Approve Completion
+                      </button>
+                    )}
+                    {activity.status === 'pending-verification' && activity.helper && (activity.helper._id === currentUserId || activity.helper === currentUserId) && (
+                      <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold bg-purple-50 text-purple-700">
+                        <Clock className="w-4 h-4" />
+                        Waiting for Approval
+                      </span>
                     )}
                   </div>
                 </div>
                 <div className="text-right">
                   <div className="text-sm font-bold text-emerald-600 mb-2">+{activity.rewardPoints} pts</div>
                   <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold border ${getStatusColor(activity.status)}`}>
-                    {activity.status.charAt(0).toUpperCase() + activity.status.slice(1)}
+                    {activity.status === 'pending-verification' ? 'Pending Verification' : activity.status.charAt(0).toUpperCase() + activity.status.slice(1)}
                   </span>
                 </div>
               </div>
@@ -363,14 +418,24 @@ function Activity() {
                 )}
               </div>
               <div className="flex items-center gap-2">
-                {selectedActivity.status === 'in-progress' && (
+                {selectedActivity.status === 'in-progress' && selectedActivity.helper && (selectedActivity.helper._id === currentUserId || selectedActivity.helper === currentUserId) && (
                   <button
                     type="button"
-                    onClick={() => handleComplete(selectedActivity._id)}
+                    onClick={() => handleComplete(selectedActivity._id, selectedActivity)}
                     disabled={completing}
                     className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-60"
                   >
-                    Mark Completed
+                    Mark as Done
+                  </button>
+                )}
+                {selectedActivity.status === 'pending-verification' && selectedActivity.requester && (selectedActivity.requester._id === currentUserId || selectedActivity.requester === currentUserId) && (
+                  <button
+                    type="button"
+                    onClick={() => handleComplete(selectedActivity._id, selectedActivity)}
+                    disabled={completing}
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-60"
+                  >
+                    Approve Completion
                   </button>
                 )}
                 {selectedActivity.status === 'pending' && (!isEditing ? (
@@ -403,6 +468,24 @@ function Activity() {
             </div>
           </div>
         </div>
+      )}
+      
+      {notification && (
+        <Notification
+          type={notification.type}
+          message={notification.message}
+          onClose={() => setNotification(null)}
+        />
+      )}
+      
+      {confirmDialog && (
+        <ConfirmDialog
+          title={confirmDialog.title}
+          message={confirmDialog.message}
+          onConfirm={confirmDialog.onConfirm}
+          onCancel={confirmDialog.onCancel}
+          confirmText="Delete"
+        />
       )}
     </div>
   );
