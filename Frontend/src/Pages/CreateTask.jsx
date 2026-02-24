@@ -29,7 +29,7 @@ function CreateTask() {
       setCurrentUserId(userId);
 
       try {
-        const userResponse = await axios.get(`http://localhost:5000/api/users/profile/${userId}`);
+        const userResponse = await axios.get(`https://hostelmate-94en.onrender.com/api/users/profile/${userId}`);
         setCurrentUserKarma(userResponse.data.karmaPoints);
       } catch (error) {
         console.error('Failed to load user data:', error);
@@ -81,7 +81,7 @@ function CreateTask() {
     }
 
     try {
-      await axios.post('http://localhost:5000/api/tasks/create', {
+      await axios.post('https://hostelmate-94en.onrender.com/api/tasks/create', {
         title: createForm.title.trim(),
         description: createForm.description.trim(),
         rewardPoints: Number(createForm.rewardPoints),

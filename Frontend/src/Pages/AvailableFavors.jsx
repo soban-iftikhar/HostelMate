@@ -43,7 +43,7 @@ function AvailableList() {
         return;
       }
 
-      const response = await axios.get(`http://localhost:5000/api/tasks/available`);
+      const response = await axios.get(`https://hostelmate-94en.onrender.com/api/tasks/available`);
       
       setTasks(response.data);
       setLoading(false);

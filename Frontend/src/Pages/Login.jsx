@@ -73,7 +73,7 @@ export default function Login({ onSuccess = null }) {
     setIsLoading(true);
     try {
       // API call to backend
-      const response = await axios.post('http://localhost:5000/api/users/login', {
+      const response = await axios.post('https://hostelmate-94en.onrender.com/api/users/login', {
         email: formData.email,
         password: formData.password
       });

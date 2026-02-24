@@ -54,7 +54,7 @@ export default function Leaderboard() {
     const fetchLeaderboard = async () => {
       try {
         setLoading(true);
-        const response = await axios.get('http://localhost:5000/api/users/leaderboard');
+        const response = await axios.get('https://hostelmate-94en.onrender.com/api/users/leaderboard');
         setLeaderboardData(response.data || []);
       } catch (err) {
         console.error('Failed to load leaderboard:', err);

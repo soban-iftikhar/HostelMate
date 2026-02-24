@@ -31,7 +31,7 @@ function Activity() {
     setCurrentUserId(userId);
 
     try {
-      const response = await axios.get(`http://localhost:5000/api/tasks/myTasks/${userId}`);
+      const response = await axios.get(`https://hostelmate-94en.onrender.com/api/tasks/myTasks/${userId}`);
       setActivities(response.data);
     } catch (error) {
       console.error('Failed to load activities. Please check your internet connectio or try again later', error);
@@ -112,7 +112,7 @@ function Activity() {
         status: editForm.status
       };
       const response = await axios.put(
-        `http://localhost:5000/api/tasks/update/${selectedActivity._id}`,
+        `https://hostelmate-94en.onrender.com/api/tasks/update/${selectedActivity._id}`,
         payload
       );
       setSelectedActivity((prev) => ({ ...prev, ...response.data }));
@@ -143,7 +143,7 @@ function Activity() {
         return;
       }
 
-      const response = await axios.put(`http://localhost:5000/api/tasks/complete/${activityId}`, {
+      const response = await axios.put(`https://hostelmate-94en.onrender.com/api/tasks/complete/${activityId}`, {
         userId: currentUserId,
         role: role
       });
@@ -170,7 +170,7 @@ function Activity() {
         try {
           setDeleting(true);
           setConfirmDialog(null);
-          await axios.delete(`http://localhost:5000/api/tasks/delete/${activityId}`, {
+          await axios.delete(`https://hostelmate-94en.onrender.com/api/tasks/delete/${activityId}`, {
             data: { userId: currentUserId }
           });
           setActivities((prev) => prev.filter((item) => item._id !== activityId));
