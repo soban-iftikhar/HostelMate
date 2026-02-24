@@ -1,4 +1,5 @@
 import express from 'express';
+import authMiddleware from '../middleware/authMiddleware.js';
 import {
   createTask,
   getAvailableTasks,
@@ -12,28 +13,28 @@ import {
 
 const router = express.Router();
 
-// Create a new task
-router.post('/create', createTask);
+// Create a new task (Protected)
+router.post('/create', authMiddleware, createTask);
 
-// Get available tasks (pending tasks not created by requesting user)
-router.get('/available', getAvailableTasks);
+// Get available tasks (Protected)
+router.get('/available', authMiddleware, getAvailableTasks);
 
-// Accept a task (user volunteers to help)
-router.put('/accept', acceptTask);
+// Accept a task (Protected)
+router.put('/accept', authMiddleware, acceptTask);
 
-// Complete a task (mark as completed and award points)
-router.put('/complete/:id', completeTask);
+// Complete a task (Protected)
+router.put('/complete/:id', authMiddleware, completeTask);
 
-// Get user's tasks (both as requester and helper)
-router.get('/myTasks/:userId', getMyTasks);
+// Get user's tasks (Protected)
+router.get('/myTasks', authMiddleware, getMyTasks);
 
-// Get user's completed task history
-router.get('/history/:userId', getHistory);
+// Get user's completed task history (Protected)
+router.get('/history', authMiddleware, getHistory);
 
-// Update own task (only if pending)
-router.put('/update/:id', updateOwnTask);
+// Update own task (Protected)
+router.put('/update/:id', authMiddleware, updateOwnTask);
 
-// Delete own task (with refund)
-router.delete('/delete/:id', deleteOwnTask);
+// Delete own task (Protected)
+router.delete('/delete/:id', authMiddleware, deleteOwnTask);
 
 export default router;

@@ -1,9 +1,11 @@
 import express from "express";
+import authMiddleware from "../middleware/authMiddleware.js";
 import {
   registerUser,
   loginUser,
   getUserProfile,
   getLeaderboard,
+  refreshTokenHandler,
 } from "../controllers/userController.js";
 
 const router = express.Router();
@@ -14,8 +16,11 @@ router.post("/register", registerUser);
 // User Login
 router.post("/login", loginUser);
 
-// Get User Profile
-router.get("/profile/:userId", getUserProfile);
+// Refresh Token
+router.post("/refresh", refreshTokenHandler);
+
+// Get User Profile (Protected Route)
+router.get("/profile", authMiddleware, getUserProfile);
 
 // Get Leaderboard
 router.get("/leaderboard", getLeaderboard);
