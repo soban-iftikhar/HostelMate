@@ -1,10 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import apiClient from '../services/apiClient';
+import { AuthContext } from '../context/AuthContext';
 
 function CreateTask() {
   const navigate = useNavigate();
-  const [currentUserId, setCurrentUserId] = useState(null);
+  const { user } = useContext(AuthContext);
   const [currentUserKarma, setCurrentUserKarma] = useState(0);
   const [createForm, setCreateForm] = useState({
     title: '',
@@ -17,19 +18,8 @@ function CreateTask() {
 
   useEffect(() => {
     const fetchUserData = async () => {
-      const storedUser = localStorage.getItem('currentUser');
-      const currentUser = storedUser ? JSON.parse(storedUser) : null;
-      
-      if (!currentUser || !currentUser._id) {
-        navigate('/login');
-        return;
-      }
-
-      const userId = currentUser._id;
-      setCurrentUserId(userId);
-
       try {
-        const userResponse = await axios.get(`https://hostelmate-94en.onrender.com/api/users/profile/${userId}`);
+        const userResponse = await apiClient.get('/users/profile');
         setCurrentUserKarma(userResponse.data.karmaPoints);
       } catch (error) {
         console.error('Failed to load user data:', error);
@@ -40,7 +30,7 @@ function CreateTask() {
     };
 
     fetchUserData();
-  }, [navigate]);
+  }, []);
 
   const handleCreateChange = (e) => {
     const { name, value } = e.target;
@@ -81,11 +71,10 @@ function CreateTask() {
     }
 
     try {
-      await axios.post('https://hostelmate-94en.onrender.com/api/tasks/create', {
+      await apiClient.post('/tasks/create', {
         title: createForm.title.trim(),
         description: createForm.description.trim(),
-        rewardPoints: Number(createForm.rewardPoints),
-        requester: currentUserId
+        rewardPoints: Number(createForm.rewardPoints)
       });
 
       // Success - navigate to activity page

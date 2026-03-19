@@ -1,20 +1,16 @@
 import { CheckCircle } from 'lucide-react';
-import { useEffect, useState } from 'react';
-import axios from 'axios';
+import { useEffect, useState, useContext } from 'react';
+import apiClient from '../services/apiClient';
+import { AuthContext } from '../context/AuthContext';
 
 function History() {
+  const { user } = useContext(AuthContext);
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [currentUserId, setCurrentUserId] = useState(null);
 
   const fetchHistory = async () => {
-    const storedUser = localStorage.getItem('currentUser');
-    const currentUser = storedUser ? JSON.parse(storedUser) : null;
-    const userId = currentUser ? currentUser._id : null;
-    setCurrentUserId(userId);
-
     try {
-      const response = await axios.get(`https://hostelmate-94en.onrender.com/api/tasks/history/${userId}`);
+      const response = await apiClient.get('/tasks/history');
       setHistory(response.data);
     } catch (error) {
       console.error('Failed to load history:', error);
@@ -54,7 +50,7 @@ function History() {
           ) : (
             history.map((item) => {
               // Check if current user is the requester (posted the task) or helper (completed the task)
-              const isRequester = item.requester?._id === currentUserId;
+              const isRequester = item.requester?._id === user?._id;
               const pointsColor = isRequester ? 'text-rose-600' : 'text-emerald-600';
               const pointsSign = isRequester ? '-' : '+';
               

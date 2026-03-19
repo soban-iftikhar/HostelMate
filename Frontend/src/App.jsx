@@ -1,4 +1,7 @@
 import { Navigate, Route, Routes, useNavigate } from "react-router-dom";
+import { useContext } from "react";
+import { AuthContext } from "./context/AuthContext";
+import ProtectedRoute from "./components/ProtectedRoute";
 import Login from "./Pages/Login";
 import Signup from "./Pages/Signup";
 import Activity from "./Pages/Activity";
@@ -10,29 +13,30 @@ import CreateTask from "./Pages/CreateTask";
 
 function App() {
   const navigate = useNavigate();
+  const { user } = useContext(AuthContext);
 
   return (
     <Routes>
-      <Route path="/" element={<Navigate to="/login" replace />} />
+      <Route path="/" element={<Navigate to={user ? "/dashboard" : "/login"} replace />} />
       <Route
         path="/login"
         element={
-          <Login
-            onSuccess={() => navigate("/dashboard")}
-          />
+          user ? <Navigate to="/dashboard" replace /> : <Login onSuccess={() => navigate("/dashboard")} />
         }
       />
       <Route
         path="/signup"
         element={
-          <Signup
-            onSuccess={() => navigate("/dashboard")}
-          />
+          user ? <Navigate to="/dashboard" replace /> : <Signup onSuccess={() => navigate("/dashboard")} />
         }
       />
       <Route
         path="/dashboard"
-        element={<Available />}
+        element={
+          <ProtectedRoute>
+            <Available />
+          </ProtectedRoute>
+        }
       >
         <Route index element={<AvailableList />} />
         <Route path="activity" element={<Activity />} />

@@ -1,12 +1,14 @@
 import { CheckCircle, Clock, AlertCircle, Pencil, Trash2, Eye, X, Plus } from 'lucide-react';
-import { useState, useEffect} from 'react';
+import { useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import apiClient from '../services/apiClient';
+import { AuthContext } from '../context/AuthContext';
 import Notification from '../Components/Notification';
 import ConfirmDialog from '../Components/ConfirmDialog';
 
 function Activity() {
   const navigate = useNavigate();
+  const { user } = useContext(AuthContext);
   const [activities, setActivities] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedActivity, setSelectedActivity] = useState(null);
@@ -25,16 +27,12 @@ function Activity() {
   const [confirmDialog, setConfirmDialog] = useState(null);
 
   const fetchActivities = async () => {
-    const storedUser = localStorage.getItem('currentUser');
-    const currentUser = storedUser ? JSON.parse(storedUser) : null;
-    const userId = currentUser ? currentUser._id : null;
-    setCurrentUserId(userId);
-
     try {
-      const response = await axios.get(`https://hostelmate-94en.onrender.com/api/tasks/myTasks/${userId}`);
+      // No need to get userId, it's extracted from token
+      const response = await apiClient.get('/tasks/myTasks');
       setActivities(response.data);
     } catch (error) {
-      console.error('Failed to load activities. Please check your internet connectio or try again later', error);
+      console.error('Failed to load activities. Please check your internet connection or try again later', error);
     } finally {
       setLoading(false);
     }
@@ -105,14 +103,13 @@ function Activity() {
         return;
       }
       const payload = {
-        userId: currentUserId,
         title: editForm.title,
         description: editForm.description,
         rewardPoints: Number(editForm.rewardPoints),
         status: editForm.status
       };
-      const response = await axios.put(
-        `https://hostelmate-94en.onrender.com/api/tasks/update/${selectedActivity._id}`,
+      const response = await apiClient.put(
+        `/tasks/update/${selectedActivity._id}`,
         payload
       );
       setSelectedActivity((prev) => ({ ...prev, ...response.data }));
@@ -131,8 +128,8 @@ function Activity() {
       setCompleting(true);
       
       // Determine if current user is helper or requester
-      const isHelper = activity.helper?._id === currentUserId || activity.helper === currentUserId;
-      const isRequester = activity.requester?._id === currentUserId || activity.requester === currentUserId;
+      const isHelper = activity.helper?._id === user._id || activity.helper === user._id;
+      const isRequester = activity.requester?._id === user._id || activity.requester === user._id;
       
       let role;
       if (isHelper) role = 'helper';
@@ -143,8 +140,7 @@ function Activity() {
         return;
       }
 
-      const response = await axios.put(`https://hostelmate-94en.onrender.com/api/tasks/complete/${activityId}`, {
-        userId: currentUserId,
+      const response = await apiClient.put(`/tasks/complete/${activityId}`, {
         role: role
       });
       
@@ -161,8 +157,6 @@ function Activity() {
   };
 
   const handleDelete = async (activityId) => {
-    if (!currentUserId) return;
-    
     setConfirmDialog({
       title: 'Delete Task',
       message: 'Are you sure you want to delete this task? Points will be refunded if applicable.',
@@ -170,9 +164,7 @@ function Activity() {
         try {
           setDeleting(true);
           setConfirmDialog(null);
-          await axios.delete(`https://hostelmate-94en.onrender.com/api/tasks/delete/${activityId}`, {
-            data: { userId: currentUserId }
-          });
+          await apiClient.delete(`/tasks/delete/${activityId}`);
           setActivities((prev) => prev.filter((item) => item._id !== activityId));
           if (selectedActivity?._id === activityId) {
             closeDetails();

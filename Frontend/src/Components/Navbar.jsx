@@ -1,26 +1,19 @@
 import { LogOut, Zap } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios'; // Consistency is key!
+import apiClient from '../services/apiClient';
+import { AuthContext } from '../context/AuthContext';
 
 function Navbar() {
   const navigate = useNavigate();
+  const { user: authUser, logout } = useContext(AuthContext);
   const [user, setUser] = useState({ name: 'Resident', karmaPoints: 0 });
   const [isLoading, setIsLoading] = useState(true);
  
   const fetchUserData = async () => {
     try {
-      const storedUser = localStorage.getItem('currentUser');
-      if (!storedUser) {
-        navigate('/login');
-        return;
-      }
-      
-      const parsedUser = JSON.parse(storedUser);
-      const userId = parsedUser._id; // MongoDB uses _id
-
-      // Using Axios to match the rest of your project
-      const response = await axios.get(`https://hostelmate-94en.onrender.com/api/users/profile/${userId}`);
+      // Using the protected route without userId in path
+      const response = await apiClient.get('/users/profile');
       
       setUser({
         name: response.data.name,
@@ -30,13 +23,16 @@ function Navbar() {
     } catch (err) {
       console.error('Navbar fetch error:', err);
       setIsLoading(false);
-      // If the token/user is invalid, clear it and go to login
-      if (err.response?.status === 404) navigate('/login');
+      // If the token/user is invalid, logout
+      if (err.response?.status === 403) {
+        logout();
+        navigate('/login');
+      }
     }
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('currentUser');
+    logout();
     navigate('/login');
   };
 
