@@ -22,7 +22,7 @@ function Available() {
 
 /**
  * Available List
- * Fetches and displays tasks that are pending and not created by the current user.
+ * Fetches and displays pending tasks not created by the current user.
  */
 function AvailableList() {
   const [tasks, setTasks] = useState([]);
@@ -32,9 +32,7 @@ function AvailableList() {
   const fetchAvailableTasks = async () => {
     try {
       setLoading(true);
-      
       const response = await apiClient.get('/tasks/available');
-      
       setTasks(response.data);
       setLoading(false);
     } catch (err) {

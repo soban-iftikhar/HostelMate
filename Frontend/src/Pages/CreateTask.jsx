@@ -46,7 +46,6 @@ function CreateTask() {
     setCreateError('');
     setCreating(true);
 
-    // Validation
     if (!createForm.title.trim()) {
       setCreateError('Title is required');
       setCreating(false);
@@ -63,7 +62,6 @@ function CreateTask() {
       return;
     }
 
-    // Check if user has enough karma points
     if (Number(createForm.rewardPoints) > currentUserKarma) {
       setCreateError(`Insufficient balance! You have ${currentUserKarma} karma points but trying to offer ${createForm.rewardPoints} points.`);
       setCreating(false);
@@ -77,7 +75,6 @@ function CreateTask() {
         rewardPoints: Number(createForm.rewardPoints)
       });
 
-      // Success - navigate to activity page
       window.dispatchEvent(new Event('karma-updated'));
       navigate('/dashboard/activity');
     } catch (error) {

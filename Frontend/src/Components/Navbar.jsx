@@ -12,7 +12,6 @@ function Navbar() {
  
   const fetchUserData = async () => {
     try {
-      // Using the protected route without userId in path
       const response = await apiClient.get('/users/profile');
       
       setUser({
@@ -23,7 +22,6 @@ function Navbar() {
     } catch (err) {
       console.error('Navbar fetch error:', err);
       setIsLoading(false);
-      // If the token/user is invalid, logout
       if (err.response?.status === 403) {
         logout();
         navigate('/login');
